@@ -184,6 +184,7 @@ class MajorRender(AbstractMajorRender):
             return await eval(f"{major_name}()").run(major_item, forward)
         except KeyError:
             logger.error("未知类型major")
+            return None
         except Exception as e:
             logger.exception("What?!")
             logger.error("Major渲染失败")

@@ -2,6 +2,7 @@ import asyncio
 from abc import ABCMeta, abstractmethod
 from os import getcwd
 from os import path
+from typing import Union
 
 import cv2 as cv
 import numpy
@@ -10,6 +11,7 @@ from PIL import ImageDraw
 from PIL import ImageFont
 from numpy import ndarray
 
+from Dynamic import logger
 from bilibili.app.dynamic.v2.dynamic_pb2 import ModuleTopic
 from .Config import ConfigReader
 
@@ -23,13 +25,23 @@ class AbstractTopic(metaclass=ABCMeta):
 class Topic(AbstractTopic, ConfigReader):
     def __init__(self):
         super().__init__()
+        self.relative_path = None
+        self.back_ground_img = None
 
-    async def topic_render(self, topic_item: ModuleTopic) -> ndarray:
-        self.relative_path = getcwd()
-        font_size = self.config_content.size.main_size
-        self.back_groud_img = Image.new("RGBA", (1080, 2 * font_size), self.config_content.color.backgroud_color)
-        await asyncio.gather(self.write_topic(topic_item), self.pase_img())
-        return cv.cvtColor(numpy.asarray(self.back_groud_img), cv.COLOR_RGBA2BGRA)
+    async def topic_render(self, topic_item: ModuleTopic, forward=False) -> Union[ndarray, None]:
+        try:
+            self.relative_path = getcwd()
+            font_size = self.config_content.size.main_size
+            if forward:
+                self.back_ground_img = Image.new("RGBA", (1080, 2 * font_size), self.config_content.color.forward_color)
+            else:
+                self.back_ground_img = Image.new("RGBA", (1080, 2 * font_size),
+                                                 self.config_content.color.backgroud_color)
+            await asyncio.gather(self.write_topic(topic_item), self.pase_img())
+            return cv.cvtColor(numpy.asarray(self.back_ground_img), cv.COLOR_RGBA2BGRA)
+        except Exception as e:
+            logger.error("渲染topic失败")
+            return
 
     async def write_topic(self, topic_item: ModuleTopic) -> None:
         """
@@ -42,9 +54,9 @@ class Topic(AbstractTopic, ConfigReader):
         font_color = self.config_content.color.extra_color
         font_size = self.config_content.size.main_size
         font = ImageFont.truetype(path.join(self.relative_path, "Static", "Font", font_name), size=font_size)
-        draw = ImageDraw.Draw(self.back_groud_img)
+        draw = ImageDraw.Draw(self.back_ground_img)
         x = 55 + font_size
-        y = int((font_size) / 2)
+        y = int(font_size / 2)
 
         draw.text(xy=(x, y), text=topic_name, fill=font_color, font=font)
 
@@ -57,6 +69,6 @@ class Topic(AbstractTopic, ConfigReader):
         topic_img = Image.open(path.join(self.relative_path, "Static", "Picture", "new_topic.png")).convert(
             "RGBA").resize((font_size, font_size))
         x = 45
-        y = int((font_size) / 2) + 5
+        y = int(font_size / 2) + 5
 
-        self.back_groud_img.paste(topic_img, (x, y), topic_img)
+        self.back_ground_img.paste(topic_img, (x, y), topic_img)
