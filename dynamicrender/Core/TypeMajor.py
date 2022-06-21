@@ -1,16 +1,26 @@
+# -*- encoding: utf-8 -*-
+"""
+@File    :   TypeMajor.py
+@Time    :   2022/06/18 21:35:17
+@Author  :   DMC
+"""
+import asyncio
 from abc import ABCMeta, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
+from os import path, getcwd
 from typing import Union, List
 
 import cv2 as cv
+import numpy
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFont, ImageDraw
+from fontTools.ttLib import TTFont
 from numpy import ndarray
 
-from bilibili.app.dynamic.v2.dynamic_pb2 import ModuleDynamic,MdlDynDrawItem
+from bilibili.app.dynamic.v2.dynamic_pb2 import ModuleDynamic, MdlDynDrawItem
 from .Config import ConfigReader
 from .Dynamic import logger
-from .Tools import PicGetter
+from .Tools import PicGetter, TextCalculate
 
 
 # mdl_dyn_archive = 0;           // 稿件
@@ -30,6 +40,42 @@ from .Tools import PicGetter
 # mdl_dyn_ugc_season = 14;       // UGC合集
 # mdl_dyn_subscription_new = 15; // 订阅卡
 
+class DrawPic(ConfigReader):
+    def __init__(self):
+        super().__init__()
+        self.relative_path = getcwd()
+
+        self.font_key = \
+            TTFont(path.join(self.relative_path, "Static", "Font", self.config_content.font.main_font_name),
+                   fontNumber=0)[
+                'cmap'].tables[0].ttFont.getBestCmap().keys()
+        self.img = None
+        self.main_font = None
+        self.standby_font = None
+
+    async def run(self, font_size, img, img_info: list):
+        self.main_font = ImageFont.truetype(
+            path.join(self.relative_path, "Static", "Font", self.config_content.font.main_font_name), font_size)
+        self.standby_font = ImageFont.truetype(
+            path.join(self.relative_path, "Static", "Font", self.config_content.font.standby_font_name), font_size)
+        self.img = img
+        self.draw = ImageDraw.Draw(self.img)
+        await asyncio.gather(*[self.draw_img(i) for i in img_info])
+        return self.img
+
+    async def draw_img(self, img_dict: dict):
+        if img_dict["info_type"] == "text":
+            text = img_dict["content"]
+            if len(text) == 1 and (ord(text) not in self.font_key):
+                self.draw.text(img_dict["position"], text, fill=img_dict["font_color"],
+                               font=self.standby_font)
+            else:
+                self.draw.text(img_dict["position"], text, fill=img_dict["font_color"],
+                               font=self.main_font)
+        else:
+            img = img_dict["content"]
+            self.img.paste(img, img_dict["position"], img)
+
 
 class AbstractMajorRender(metaclass=ABCMeta):
     @abstractmethod
@@ -41,6 +87,58 @@ class AbstractMajor(metaclass=ABCMeta):
     @abstractmethod
     async def assemble(self, item: dict) -> ndarray:
         pass
+
+
+class MAJOR_TYPE_Archive(ConfigReader, PicGetter):
+    def __init__(self):
+        super().__init__()
+        self.background = None
+
+    async def run(self, major_item: ModuleDynamic, forward: bool = False):
+        """
+        渲染Archive类Major的入口函数
+        :param major_item:
+        :param forward:
+        :return:
+        """
+        if forward:
+            self.background = Image.new("RGBA", (1080, 645), self.config_content.color.forward_color)
+        else:
+            self.background = Image.new("RGBA", (1080, 645), self.config_content.color.backgroud_color)
+
+        cover_uri = major_item.dyn_archive.cover
+        title = major_item.dyn_archive.title
+        duration = major_item.dyn_archive.cover_left_text_1
+        await self.make_main_card(cover_uri, title, duration)
+        return cv.cvtColor(numpy.asarray(self.background), cv.COLOR_RGBA2BGRA)
+
+    async def make_main_card(self, cover_uri, title, duration):
+
+        play_icon = Image.open(path.join(getcwd(), "Static", "Picture", "tv.png")).resize((130, 130))
+        cover = PicGetter().pic_getter(cover_uri, mode="PIL")
+        cover = cover.resize((1010, 570))
+        duration_pic = await self.make_duration_info(duration)
+
+        title_size = self.config_content.size.main_size
+        title_position = await TextCalculate().calculate(title_size,
+                                                         self.config_content.color.text_color, 1020, 600, 35, 580,
+                                                         title)
+        title_position.append({"info_type": "img", "content": cover, "position": (35, 0)})
+        title_position.append({"info_type": "img", "content": duration_pic, "position": (80, 500)})
+        # print(title_position)
+        img = await DrawPic().run(title_size, self.background, title_position)
+        img.paste(play_icon, (905, 430), play_icon)
+        self.background = img
+
+    async def make_duration_info(self, duration: str):
+        font_path = path.join(getcwd(), "Static", "Font", self.config_content.font.main_font_name)
+        font = ImageFont.truetype(font_path, self.config_content.size.sub_size)
+        duration_size = font.getsize(duration)
+        bk_pic_size = (duration_size[0] + 20, duration_size[1] + 20)
+        bk_pic = Image.new("RGBA", bk_pic_size, (0, 0, 0, 90))
+        draw = ImageDraw.Draw(bk_pic)
+        draw.text((10, 5), duration, fill=(255, 255, 255, 255), font=font)
+        return bk_pic
 
 
 class MAJOR_TYPE_DRAW(ConfigReader, AbstractMajor, PicGetter):
@@ -179,7 +277,7 @@ class MajorRender(AbstractMajorRender):
 
     async def major_render(self, major_item: ModuleDynamic, forward: bool = False) -> Union[None, ndarray]:
         try:
-            major_map = {5: "MAJOR_TYPE_DRAW"}
+            major_map = {0: "MAJOR_TYPE_Archive", 5: "MAJOR_TYPE_DRAW"}
             major_name = major_map[major_item.type]
             return await eval(f"{major_name}()").run(major_item, forward)
         except KeyError:

@@ -1,3 +1,11 @@
+# -*- encoding: utf-8 -*-
+"""
+@File    :   TypeTopic.py
+@Time    :   2022/06/18 21:35:38
+@Author  :   DMC
+"""
+
+
 import asyncio
 from abc import ABCMeta, abstractmethod
 from os import getcwd
@@ -11,7 +19,7 @@ from PIL import ImageDraw
 from PIL import ImageFont
 from numpy import ndarray
 
-from Dynamic import logger
+from .Dynamic import logger
 from bilibili.app.dynamic.v2.dynamic_pb2 import ModuleTopic
 from .Config import ConfigReader
 
@@ -70,5 +78,4 @@ class Topic(AbstractTopic, ConfigReader):
             "RGBA").resize((font_size, font_size))
         x = 45
         y = int(font_size / 2) + 5
-
         self.back_ground_img.paste(topic_img, (x, y), topic_img)
