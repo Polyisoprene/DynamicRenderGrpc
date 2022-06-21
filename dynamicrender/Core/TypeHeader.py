@@ -1,3 +1,11 @@
+# -*- encoding: utf-8 -*-
+"""
+@File    :   TypeHeader.py
+@Time    :   2022/06/18 21:34:04
+@Author  :   DMC
+"""
+
+
 from abc import ABCMeta, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
@@ -73,7 +81,7 @@ class Header(AbstractHeadedr, ConfigReader):
                               "size": self.config_content.size.main_size,
                               "color": self.config_content.color.sub_font_color,
                               "position": (200, 320)
-                          }]
+        }]
 
         url_info_list = [{"type": "face",
                           "url": f"{auther.author.face}@120w_120h_1c_1s.webp",
@@ -105,7 +113,8 @@ class Header(AbstractHeadedr, ConfigReader):
         bili_logo = Image.open(path.join(self.relative_path, "Static", "Picture", "bilibili.png")).convert(
             "RGBA").resize((231, 105))
 
-        pic_info.append({"type": "img", "content": bili_logo, "position": (433, 20)})
+        pic_info.append(
+            {"type": "img", "content": bili_logo, "position": (433, 20)})
 
         if auther.official.type != -1:
             official_verify_path = [path.join(self.relative_path, "Static", "Picture", "official_yellow.png"),
@@ -197,7 +206,8 @@ class Header(AbstractHeadedr, ConfigReader):
     async def assemble_img(self, info_dict) -> None:
         info_type = info_dict["type"]
         if info_type == "text":
-            font = ImageFont.truetype(self.font_path, size=info_dict["size"], encoding='utf-8')
+            font = ImageFont.truetype(
+                self.font_path, size=info_dict["size"], encoding='utf-8')
             self.draw.text(xy=info_dict["position"], text=info_dict["content"], font=font,
                            fill=info_dict["color"])
         else:

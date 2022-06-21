@@ -1,3 +1,11 @@
+# -*- encoding: utf-8 -*-
+"""
+@File    :   TypeFooter.py
+@Time    :   2022/06/18 21:34:53
+@Author  :   DMC
+"""
+
+
 from abc import ABCMeta, abstractmethod
 from typing import Union
 
@@ -6,7 +14,7 @@ import numpy as np
 import qrcode
 from PIL import Image, ImageFont, ImageDraw
 from numpy import ndarray
-from os import path,getcwd
+from os import path, getcwd
 from .Config import ConfigReader
 from .Dynamic import logger
 
@@ -31,11 +39,15 @@ class Footer(AbstractFooter, ConfigReader):
         """
         try:
             relative_path = getcwd()
-            self.background = Image.new("RGBA", (1080, 276), self.config_content.color.backgroud_color)
+            self.background = Image.new(
+                "RGBA", (1080, 276), self.config_content.color.backgroud_color)
             qr = await self.make_qrcode(dynamic_id)
-            bili_pic = Image.open(path.join(relative_path, "Static", "Picture", "bilibili.png")).convert("RGBA")
-            bili_pic = bili_pic.resize((int(bili_pic.size[0] / 4), int(bili_pic.size[1] / 4)))
-            font = ImageFont.truetype(path.join(relative_path, "Static", "Font", self.config_content.font.main_font_name), 30, encoding='utf-8')
+            bili_pic = Image.open(
+                path.join(relative_path, "Static", "Picture", "bilibili.png")).convert("RGBA")
+            bili_pic = bili_pic.resize(
+                (int(bili_pic.size[0] / 4), int(bili_pic.size[1] / 4)))
+            font = ImageFont.truetype(path.join(
+                relative_path, "Static", "Font", self.config_content.font.main_font_name), 30, encoding='utf-8')
             draw = ImageDraw.Draw(self.background, "RGBA")
             draw.text((50, 200), "扫描二维码查看动态", font=font, fill="#ff4e80")
             self.background.paste(bili_pic, (50, 90), bili_pic)
@@ -55,6 +67,7 @@ class Footer(AbstractFooter, ConfigReader):
         :return: 二维码图片
         :rtype: Image.Image
         """
-        qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_Q, box_size=3, border=1)
+        qr = qrcode.QRCode(
+            version=1, error_correction=qrcode.constants.ERROR_CORRECT_Q, box_size=3, border=1)
         qr.add_data(f"https://t.bilibili.com/{dynamic_id}")
         return qr.make_image(fill_color="black").convert("RGBA").resize((164, 164))

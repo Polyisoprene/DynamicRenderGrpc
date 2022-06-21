@@ -1,3 +1,11 @@
+# -*- encoding: utf-8 -*-
+"""
+@File    :   Config.py
+@Time    :   2022/06/18 21:35:54
+@Author  :   DMC
+"""
+
+
 import json
 from os import path, getcwd
 
