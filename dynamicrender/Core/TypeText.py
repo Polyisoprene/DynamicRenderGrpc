@@ -84,7 +84,6 @@ class Text(AbstractText, ConfigReader):
         """
         info_list = []
         emoji_info = []
-        print(text)
         text = text.translate(str.maketrans({'\r': '', chr(65039): '', chr(65038): '', chr(8205): ''}))
         for rich_text in rich_text_nodes:
 

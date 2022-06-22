@@ -102,9 +102,9 @@ class MAJOR_TYPE_Archive(ConfigReader, PicGetter):
         :return:
         """
         if forward:
-            self.background = Image.new("RGBA", (1080, 645), self.config_content.color.forward_color)
+            self.background = Image.new("RGBA", (1080, 695), self.config_content.color.forward_color)
         else:
-            self.background = Image.new("RGBA", (1080, 645), self.config_content.color.backgroud_color)
+            self.background = Image.new("RGBA", (1080, 695), self.config_content.color.backgroud_color)
 
         cover_uri = major_item.dyn_archive.cover
         title = major_item.dyn_archive.title
@@ -115,19 +115,18 @@ class MAJOR_TYPE_Archive(ConfigReader, PicGetter):
     async def make_main_card(self, cover_uri, title, duration):
 
         play_icon = Image.open(path.join(getcwd(), "Static", "Picture", "tv.png")).resize((130, 130))
-        cover = PicGetter().pic_getter(cover_uri, mode="PIL")
+        cover = PicGetter().pic_getter(f"{cover_uri}@576w_360h_1c.webp", mode="PIL")
         cover = cover.resize((1010, 570))
         duration_pic = await self.make_duration_info(duration)
 
         title_size = self.config_content.size.main_size
         title_position = await TextCalculate().calculate(title_size,
-                                                         self.config_content.color.text_color, 1020, 600, 35, 580,
+                                                         self.config_content.color.text_color, 1020, 600, 35, 605,
                                                          title)
-        title_position.append({"info_type": "img", "content": cover, "position": (35, 0)})
-        title_position.append({"info_type": "img", "content": duration_pic, "position": (80, 500)})
-        # print(title_position)
+        title_position.append({"info_type": "img", "content": cover, "position": (35, 25)})
+        title_position.append({"info_type": "img", "content": duration_pic, "position": (80, 525)})
         img = await DrawPic().run(title_size, self.background, title_position)
-        img.paste(play_icon, (905, 430), play_icon)
+        img.paste(play_icon, (905, 455), play_icon)
         self.background = img
 
     async def make_duration_info(self, duration: str):
@@ -281,6 +280,7 @@ class MajorRender(AbstractMajorRender):
             major_name = major_map[major_item.type]
             return await eval(f"{major_name}()").run(major_item, forward)
         except KeyError:
+            logger.exception("What?!")
             logger.error("未知类型major")
             return None
         except Exception as e:

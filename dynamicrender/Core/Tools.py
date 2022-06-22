@@ -142,7 +142,7 @@ class TextCalculate(ConfigReader):
                     y += y_interval
                     if y > y_constraint:
                         position_info[-1] = {"info_type": "text", "content": "...",
-                                             "position": position_info[-1]["position"], "color": font_color}
+                                             "position": position_info[-1]["position"], "font_color": font_color}
                         break
                 continue
             position_info.append(
@@ -194,7 +194,9 @@ class TextCalculate(ConfigReader):
         :return:
         """
         size = font.getsize(text)
-        img = Image.new("RGBA", size)
+        img_size = min(size)
+        img = Image.new("RGBA", (img_size,img_size))
         draw = ImageDraw.Draw(img)
+        # print(int(size[1]/size[0]*main_font_size))
         draw.text(xy=(0, 0), text=text, font=font, embedded_color=True)
         return img.resize((main_font_size, main_font_size))

@@ -157,7 +157,7 @@ class DYNAMIC_TYPE_WORD(AbstractRun):
 
 class DYNAMIC_TYPE_DRAW(AbstractRun):
     async def run(self, item: DynamicItem) -> bytes:
-        """不同类型动态的渲染函数的入口函数
+        """渲染的入口函数
 
         :param item: 动态的item部分
         :type item: DynamicItem
