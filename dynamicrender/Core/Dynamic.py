@@ -304,7 +304,19 @@ class DYNAMIC_TYPE_COMMON_VERTICAL(AbstractRun):
         :return: 渲染完成后的图片的二进制数据
         :rtype: bytes
         """
-        pass
+        module_type_list = [module.module_type for module in item.modules]
+        tasks = [Header().header_render(item.modules[0].module_author), Footer().footer_render(item.extend.dyn_id_str)]
+        if 23 in module_type_list:
+            topic_index = module_type_list.index(23)
+            tasks.insert(topic_index, Topic().topic_render(item.modules[topic_index].module_topic))
+        if 3 in module_type_list:
+            text_module_index = module_type_list.index(3)
+            tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
+        dynamic_index = module_type_list.index(4)
+        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
+        all_pic = await asyncio.gather(*tasks)
+        temp = [i for i in all_pic if i is not None]
+        return await self.assemble(temp)
 
     async def assemble(self, pic_list: list) -> bytes:
         """将各个部分的图片组装成一个完整的图片
@@ -314,7 +326,10 @@ class DYNAMIC_TYPE_COMMON_VERTICAL(AbstractRun):
         :return: 完整图片的二进制数据
         :rtype: bytes
         """
-        pass
+        if len(pic_list) == 1:
+            return np.array(cv.imencode('.png', pic_list[0])[1]).tobytes()
+        img = cv.vconcat(pic_list)
+        return np.array(cv.imencode('.png', img)[1]).tobytes()
 
 
 class DYNAMIC_TYPE_COURSES_SEASON(AbstractRun):
@@ -414,7 +429,19 @@ class DYNAMIC_TYPE_COMMON_SQUARE(AbstractRun):
         :return: 渲染完成后的图片的二进制数据
         :rtype: bytes
         """
-        pass
+        module_type_list = [module.module_type for module in item.modules]
+        tasks = [Header().header_render(item.modules[0].module_author), Footer().footer_render(item.extend.dyn_id_str)]
+        if 23 in module_type_list:
+            topic_index = module_type_list.index(23)
+            tasks.insert(topic_index, Topic().topic_render(item.modules[topic_index].module_topic))
+        if 3 in module_type_list:
+            text_module_index = module_type_list.index(3)
+            tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
+        dynamic_index = module_type_list.index(4)
+        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
+        all_pic = await asyncio.gather(*tasks)
+        temp = [i for i in all_pic if i is not None]
+        return await self.assemble(temp)
 
     async def assemble(self, pic_list: list) -> bytes:
         """将各个部分的图片组装成一个完整的图片
@@ -424,7 +451,10 @@ class DYNAMIC_TYPE_COMMON_SQUARE(AbstractRun):
         :return: 完整图片的二进制数据
         :rtype: bytes
         """
-        pass
+        if len(pic_list) == 1:
+            return np.array(cv.imencode('.png', pic_list[0])[1]).tobytes()
+        img = cv.vconcat(pic_list)
+        return np.array(cv.imencode('.png', img)[1]).tobytes()
 
 
 class DYNAMIC_TYPE_FORWARD(AbstractRun):

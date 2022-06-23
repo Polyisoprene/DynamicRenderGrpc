@@ -24,9 +24,10 @@ from .Dynamic import logger
 
 
 class PicGetter:
-    def pic_getter(self, url, mode: str = "ndarry") -> Union[ndarray, None]:
+    def pic_getter(self, url, mode: str = "ndarry") -> Union[ndarray, Image.Image, None]:
         """请求图片的函数
 
+        :param mode:
         :param url: 图片url
         :type url: str
         :return: 下载完成并被转换成四通道的ndarray数据
@@ -34,13 +35,10 @@ class PicGetter:
         """
         try:
             response = httpx.get(url)
-            if mode == "ndarry":
-                img = cv.imdecode(np.asarray(
-                    bytearray(response.content), dtype='uint8'), -1)
-                return self.convert_png(img)
-            else:
-                img = Image.open(BytesIO(response.content)).convert("RGBA")
-                return img
+            image = Image.open(BytesIO(response.content)).convert("RGBA")
+            if mode != "ndarry":
+                return image
+            return cv.cvtColor(np.asarray(image), cv.COLOR_RGBA2BGRA)
         except Exception as e:
             logger.exception("What?!")
             return None
@@ -195,7 +193,7 @@ class TextCalculate(ConfigReader):
         """
         size = font.getsize(text)
         img_size = min(size)
-        img = Image.new("RGBA", (img_size,img_size))
+        img = Image.new("RGBA", (img_size, img_size))
         draw = ImageDraw.Draw(img)
         # print(int(size[1]/size[0]*main_font_size))
         draw.text(xy=(0, 0), text=text, font=font, embedded_color=True)

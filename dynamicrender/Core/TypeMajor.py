@@ -5,6 +5,7 @@
 @Author  :   DMC
 """
 import asyncio
+import re
 from abc import ABCMeta, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from os import path, getcwd
@@ -41,6 +42,10 @@ from .Tools import PicGetter, TextCalculate
 # mdl_dyn_subscription_new = 15; // 订阅卡
 
 class DrawPic(ConfigReader):
+    """
+    绘制文本及emoji
+    """
+
     def __init__(self):
         super().__init__()
         self.relative_path = getcwd()
@@ -85,16 +90,16 @@ class AbstractMajorRender(metaclass=ABCMeta):
 
 class AbstractMajor(metaclass=ABCMeta):
     @abstractmethod
-    async def assemble(self, item: dict) -> ndarray:
+    async def run(self, major_item: ModuleDynamic, forward: bool = False) -> ndarray:
         pass
 
 
-class MAJOR_TYPE_Archive(ConfigReader, PicGetter):
+class MAJOR_TYPE_ARCHIVE(ConfigReader, PicGetter):
     def __init__(self):
         super().__init__()
         self.background = None
 
-    async def run(self, major_item: ModuleDynamic, forward: bool = False):
+    async def run(self, major_item: ModuleDynamic, forward: bool = False) -> ndarray:
         """
         渲染Archive类Major的入口函数
         :param major_item:
@@ -105,7 +110,6 @@ class MAJOR_TYPE_Archive(ConfigReader, PicGetter):
             self.background = Image.new("RGBA", (1080, 695), self.config_content.color.forward_color)
         else:
             self.background = Image.new("RGBA", (1080, 695), self.config_content.color.backgroud_color)
-
         cover_uri = major_item.dyn_archive.cover
         title = major_item.dyn_archive.title
         duration = major_item.dyn_archive.cover_left_text_1
@@ -144,7 +148,7 @@ class MAJOR_TYPE_DRAW(ConfigReader, AbstractMajor, PicGetter):
     def __init__(self) -> None:
         super().__init__()
 
-    async def run(self, major_item: ModuleDynamic, forward: bool) -> ndarray:
+    async def run(self, major_item: ModuleDynamic, forward: bool = False) -> ndarray:
         """渲染Draw类Major的入口函数
 
         :param major_item: major主体
@@ -270,13 +274,117 @@ class MAJOR_TYPE_DRAW(ConfigReader, AbstractMajor, PicGetter):
         self.backgroud[position[2]:position[3], position[0]:position[1], :] = item["img"][:, :, :]
 
 
+class MAJOR_TYPE_COMMON(ConfigReader, AbstractMajor):
+    def __init__(self):
+        super().__init__()
+        self.background = None
+
+    async def run(self, major_item: ModuleDynamic, forward: bool = False) -> Union[ndarray, None]:
+        try:
+            if forward:
+                self.background = Image.new("RGBA", (1080, 285), self.config_content.color.forward_color)
+            else:
+                self.background = Image.new("RGBA", (1080, 285), self.config_content.color.backgroud_color)
+            img = ImageDraw.ImageDraw(self.background)
+            img.rectangle(((35, 20), (1045, 265)), fill=None, outline='#e5e9ef', width=2)
+            if major_item.dyn_common.bizType == 201:
+                return await self.common_comic(major_item)
+            else:
+                return await self.common_general(major_item)
+        except Exception as e:
+            logger.exception("What?!")
+            logger.error("渲染Major_Common失败")
+            return
+
+    async def common_comic(self, major_item: ModuleDynamic):
+        """
+        漫画类型的common
+        :param major_item:
+        :return:
+        """
+        url_without_webp = re.compile(r"@\d+w_\d+h.webp").sub('', major_item.dyn_common.cover)
+        url = f"{url_without_webp}@180w_245h_1c.webp"
+        title = major_item.dyn_common.title
+        label = major_item.dyn_common.label
+        desc = major_item.dyn_common.desc
+        title_size = self.config_content.size.main_size
+        sub_title_size = self.config_content.size.sub_title_size
+        cover = PicGetter().pic_getter(url, "PIL").resize((180, 245))
+        cover_position = [{"info_type": "img", "content": cover, "position": (35, 20)}]
+        title_position = TextCalculate().calculate(title_size,
+                                                   self.config_content.color.text_color, 1000, 40, 245, 40,
+                                                   title)
+        label_position = TextCalculate().calculate(sub_title_size,
+                                                   self.config_content.color.sub_font_color, 1000, 180, 245, 180,
+                                                   label)
+
+        desc_position = TextCalculate().calculate(sub_title_size,
+                                                  self.config_content.color.sub_font_color, 1000, 115, 245, 115,
+                                                  desc)
+
+        result = await asyncio.gather(title_position, desc_position, label_position)
+        draw = DrawPic()
+        task_1 = draw.run(title_size, self.background, result[0])
+        task_2 = draw.run(sub_title_size, self.background, result[1])
+        if major_item.dyn_common.badge:
+            cover_position.append(await self.make_badge(major_item.dyn_common.badge))
+        task_3 = draw.run(sub_title_size, self.background, cover_position)
+        task_4 = draw.run(sub_title_size, self.background, result[2])
+        await asyncio.gather(task_1, task_2, task_3, task_4)
+
+        return cv.cvtColor(numpy.asarray(self.background), cv.COLOR_RGBA2BGRA)
+
+    async def common_general(self, major_item: ModuleDynamic):
+        """
+        :param major_item:
+        :return:
+        """
+        url_without_webp = re.compile(r"@\d+w_\d+h.webp").sub('', major_item.dyn_common.cover)
+        url = f"{url_without_webp}@245w_245h_1c.webp"
+        title = major_item.dyn_common.title
+        desc = major_item.dyn_common.desc
+        title_size = self.config_content.size.main_size
+        sub_title_size = self.config_content.size.sub_title_size
+        cover = PicGetter().pic_getter(url, "PIL").resize((245, 245))
+        cover_position = [{"info_type": "img", "content": cover, "position": (35, 20)}]
+        title_position = TextCalculate().calculate(title_size,
+                                                   self.config_content.color.text_color, 900, 85, 310, 85,
+                                                   title)
+        desc_position = TextCalculate().calculate(sub_title_size,
+                                                  self.config_content.color.sub_font_color, 1000, 170, 310, 170,
+                                                  desc)
+        result = await asyncio.gather(title_position, desc_position)
+        draw = DrawPic()
+        task_1 = draw.run(title_size, self.background, result[0])
+        task_2 = draw.run(sub_title_size, self.background, result[1])
+        if major_item.dyn_common.badge:
+            cover_position.append(await self.make_badge(major_item.dyn_common.badge))
+        task_3 = draw.run(sub_title_size, self.background, cover_position)
+        await asyncio.gather(task_1, task_2, task_3)
+        return cv.cvtColor(numpy.asarray(self.background), cv.COLOR_RGBA2BGRA)
+
+    async def make_badge(self, badge):
+        """
+        制作badge
+        :param badge:
+        :return:
+        """
+        text = badge[0].text
+        text_color = badge[0].text_color
+        bg_color = badge[0].bg_color
+        badge_img = Image.new("RGBA", (100, 50), bg_color)
+        text_info = [{"info_type": "text", "content": text, "position": (15, 0), "font_color": text_color}]
+        badge_img = await DrawPic().run(self.config_content.size.sub_title_size, badge_img, text_info)
+        return {"info_type": "img", "content": badge_img, "position": (915, 35)}
+
+
 class MajorRender(AbstractMajorRender):
     def __init__(self) -> None:
         pass
 
     async def major_render(self, major_item: ModuleDynamic, forward: bool = False) -> Union[None, ndarray]:
         try:
-            major_map = {0: "MAJOR_TYPE_Archive", 5: "MAJOR_TYPE_DRAW"}
+            major_map = {0: "MAJOR_TYPE_ARCHIVE", 5: "MAJOR_TYPE_DRAW", 8: "MAJOR_TYPE_COMMON"}
             major_name = major_map[major_item.type]
             return await eval(f"{major_name}()").run(major_item, forward)
         except KeyError:

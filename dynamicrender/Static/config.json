@@ -13,10 +13,11 @@
         "emoji_font_name" : "nte.ttf"
     },
     "size":{
-        "uname_size":32,
-        "main_size":28,
-        "sub_size":24,
-        "emoji_size":109
+        "uname_size":45,
+        "main_size":40,
+        "sub_size":30,
+        "emoji_size":109,
+        "sub_title_size": 35
 
     }
 }
