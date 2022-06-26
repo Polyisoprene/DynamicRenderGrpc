@@ -5,6 +5,7 @@
 @Author  :   DMC
 """
 import asyncio
+import json
 import re
 from abc import ABCMeta, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
@@ -207,6 +208,52 @@ class MAJOR_TYPE_ARCHIVE(ConfigReader, AbstractMajor, PicGetter):
         bk_pic = Image.new("RGBA", bk_pic_size, (0, 0, 0, 90))
         draw = ImageDraw.Draw(bk_pic)
         draw.text((10, 5), duration, fill=(255, 255, 255, 255), font=font)
+        return bk_pic
+
+
+class MAJOR_TYPE_COURSES_SEASON(ConfigReader, AbstractMajor, PicGetter):
+    def __init__(self):
+        super().__init__()
+        self.background = None
+
+    async def run(self, major_item: ModuleDynamic, forward: bool = False) -> Union[None, ndarray]:
+        try:
+            if forward:
+                self.background = Image.new("RGBA", (1080, 695), self.config_content.color.forward_color)
+            else:
+                self.background = Image.new("RGBA", (1080, 695), self.config_content.color.backgroud_color)
+            cover_uri = major_item.dyn_cour_season.cover
+            title = major_item.dyn_cour_season.title
+            badge = major_item.dyn_cour_season.badge
+            await self.make_main_card(cover_uri, title, badge)
+            return cv.cvtColor(numpy.asarray(self.background), cv.COLOR_RGBA2BGRA)
+        except Exception as e:
+            logger.exception("What?!")
+            return None
+
+    async def make_main_card(self, cover_uri, title, badge):
+        play_icon = Image.open(path.join(getcwd(), "Static", "Picture", "tv.png")).resize((130, 130))
+        cover = PicGetter().pic_getter(f"{cover_uri}@505w_285h_1c.webp", mode="PIL")
+        cover = cover.resize((1010, 570))
+        badge_img = await self.make_badge(badge)
+        title_size = self.config_content.size.main_size
+        title_position = await TextCalculate().calculate(title_size,
+                                                         self.config_content.color.text_color, 1020, 600, 35, 605,
+                                                         title)
+        title_position.append({"info_type": "img", "content": cover, "position": (35, 25)})
+        title_position.append({"info_type": "img", "content": badge_img, "position": (925, 40)})
+        img = await DrawPic().run(title_size, self.background, title_position)
+        img.paste(play_icon, (905, 455), play_icon)
+        self.background = img
+
+    async def make_badge(self, badge):
+        font_path = path.join(getcwd(), "Static", "Font", self.config_content.font.main_font_name)
+        font = ImageFont.truetype(font_path, self.config_content.size.sub_size)
+        badge_size = font.getsize(badge.text)
+        bk_pic_size = (badge_size[0] + 20, badge_size[1] + 20)
+        bk_pic = Image.new("RGBA", bk_pic_size, badge.bg_color)
+        draw = ImageDraw.Draw(bk_pic)
+        draw.text((10, 5), badge.text, fill=(255, 255, 255, 255), font=font)
         return bk_pic
 
 
@@ -485,14 +532,254 @@ class MAJOR_TYPE_COMMON(ConfigReader, AbstractMajor):
                 {"info_type": "text", "content": text, "position": (930, 35), "font_color": text_color}]
 
 
+class MAJOR_TYPE_ARTICLE(ConfigReader, AbstractMajor, PicGetter):
+    def __init__(self):
+        super().__init__()
+        self.background = None
+
+    async def run(self, major_item: ModuleDynamic, forward: bool = False) -> Union[None, ndarray]:
+        try:
+            if forward:
+                self.background = Image.new("RGBA", (1080, 755), self.config_content.color.forward_color)
+            else:
+                self.background = Image.new("RGBA", (1080, 755), self.config_content.color.backgroud_color)
+            img = ImageDraw.ImageDraw(self.background)
+            img.rectangle(((35, 20), (1045, 735)), fill=self.config_content.color.backgroud_color, outline='#e5e9ef',
+                          width=2)
+            text_position_info = await self.get_text_position_info(major_item.dyn_article.title,
+                                                                   major_item.dyn_article.desc,
+                                                                   major_item.dyn_article.label)
+            cover_position_info = await self.get_pic_position_info(major_item.dyn_article.covers)
+            draw = DrawPic()
+            title_task = draw.run(self.config_content.size.uname_size, self.background, text_position_info[0])
+            desc_task = draw.run(self.config_content.size.sub_size, self.background, text_position_info[1])
+            label_task = draw.run(self.config_content.size.sub_size, self.background, text_position_info[2])
+            cover_task = draw.run(img=self.background, img_info=cover_position_info)
+            await asyncio.gather(title_task, desc_task, label_task, cover_task)
+            return cv.cvtColor(numpy.asarray(self.background), cv.COLOR_RGBA2BGRA)
+        except Exception as e:
+            logger.exception("What?!")
+            return None
+
+    async def get_text_position_info(self, title, desc, label):
+        """
+        获取所有文字的位置信息
+        :param title:
+        :param desc:
+        :param label:
+        :return:
+        """
+        title_size = self.config_content.size.uname_size
+        sub_size = self.config_content.size.sub_size
+        cal = TextCalculate()
+        desc = desc.replace(" ", "")
+        title_task = cal.calculate(title_size, self.config_content.color.text_color, 1000, 120, 70, 65,
+                                   title)
+        desc_task = cal.calculate(sub_size, self.config_content.color.sub_font_color, 1000, 620, 70, 560,
+                                  desc)
+        label = cal.calculate(sub_size, self.config_content.color.sub_font_color, 1000, 665, 70, 665,
+                              label)
+        return await asyncio.gather(title_task, desc_task, label)
+
+    async def get_pic_position_info(self, covers: list):
+        """
+        获取封面及齐位置信息
+        :param covers:
+        :return:
+        """
+        if len(covers) == 1:
+            cover = self.pic_getter(f"{covers[0]}@1010w_300h_1c.webp", mode="PIL")
+            return [{"info_type": "img", "content": cover, "position": (35, 210)}]
+        else:
+            temp = []
+            for i in covers:
+                temp.append(f"{i}@330w_330h_1c.webp")
+            with ThreadPoolExecutor(max_workers=3) as pool:
+                result = pool.map(self.pic_getter, temp, ["PIL", "PIL", "PIL"])
+            img_info = []
+            for i, img in enumerate(result):
+                img_info.append({"info_type": "img", "content": img, "position": (35 + i * 340, 200)})
+            return img_info
+
+
+class MAJOR_TYPE_LIVE(ConfigReader, AbstractMajor, PicGetter):
+    def __init__(self):
+        super().__init__()
+        self.background = None
+
+    async def run(self, major_item: ModuleDynamic, forward: bool = False) -> Union[None, ndarray]:
+        try:
+            if forward:
+                self.background = Image.new("RGBA", (1080, 300), self.config_content.color.forward_color)
+            else:
+                self.background = Image.new("RGBA", (1080, 300), self.config_content.color.backgroud_color)
+            img = ImageDraw.ImageDraw(self.background)
+            img.rectangle(((35, 15), (1045, 285)), fill=self.config_content.color.backgroud_color, outline='#e5e9ef',
+                          width=2)
+            cover = major_item.dyn_common_live.cover
+            cover_label = f"{major_item.dyn_common_live.cover_label} · {major_item.dyn_common_live.cover_label2}"
+            badge_img = await self.make_badge(major_item.dyn_common_live.badge)
+            cover = self.pic_getter(f"{cover}@435w_270h_1c.webp", "PIL").resize((435, 270))
+            text_position_info = await self.get_text_position(major_item.dyn_common_live.title, cover_label)
+            draw = DrawPic()
+            title_task = draw.run(self.config_content.size.uname_size, self.background, text_position_info[0])
+            label_task = draw.run(self.config_content.size.sub_size, self.background, text_position_info[1])
+            cover_task = draw.run(img=self.background,
+                                  img_info=[{"info_type": "img", "content": cover, "position": (35, 15)}])
+            badge_task = draw.run(img=self.background, img_info=badge_img)
+            await asyncio.gather(title_task, label_task, cover_task, badge_task)
+            return cv.cvtColor(numpy.asarray(self.background), cv.COLOR_RGBA2BGRA)
+
+        except Exception as e:
+            logger.exception("What?!")
+            return None
+
+    async def get_text_position(self, title, label):
+        title_size = self.config_content.size.main_size
+        label_size = self.config_content.size.sub_title_size
+        cal = TextCalculate()
+        title_task = cal.calculate(title_size, self.config_content.color.text_color, 855, 120, 500, 55,
+                                   title)
+        label = cal.calculate(label_size, self.config_content.color.sub_font_color, 1000, 210, 500, 210,
+                              label)
+
+        return await asyncio.gather(title_task, label)
+
+    async def make_badge(self, badge):
+        text = badge.text
+        font_path = path.join(getcwd(), "Static", "Font", self.config_content.font.main_font_name)
+        font = ImageFont.truetype(font_path, self.config_content.size.sub_size)
+        badge_size = font.getsize(text)
+        bk_pic_size = (badge_size[0] + 20, badge_size[1] + 20)
+        bk_pic = Image.new("RGBA", bk_pic_size, "#fb7299")
+        draw = ImageDraw.Draw(bk_pic)
+        draw.text((10, 5), text, fill=(255, 255, 255, 255), font=font)
+        return [{"info_type": "img", "content": bk_pic, "position": (900, 35)}]
+
+
+class MAJOR_TYPE_LIVE_RCMD(ConfigReader, AbstractMajor, PicGetter):
+    def __init__(self):
+        super().__init__()
+        self.background = None
+
+    async def run(self, major_item: ModuleDynamic, forward: bool = False) -> Union[None, ndarray]:
+
+        try:
+            if forward:
+                self.background = Image.new("RGBA", (1080, 300), self.config_content.color.forward_color)
+            else:
+                self.background = Image.new("RGBA", (1080, 300), self.config_content.color.backgroud_color)
+            img = ImageDraw.ImageDraw(self.background)
+            img.rectangle(((35, 15), (1045, 285)), fill=self.config_content.color.backgroud_color, outline='#e5e9ef',
+                          width=2)
+            content = json.loads(major_item.dyn_live_rcmd.content)
+            cover = content["live_play_info"]["cover"]
+            label = f"{content['live_play_info']['online']}人气 · {content['live_play_info']['area_name']}"
+            cover = self.pic_getter(f"{cover}@435w_270h_1c.webp", "PIL").resize((435, 270))
+            text_position_info = await self.get_text_position(content["live_play_info"]["title"], label)
+            badge_img = await self.make_badge()
+            draw = DrawPic()
+            title_task = draw.run(self.config_content.size.uname_size, self.background, text_position_info[0])
+            label_task = draw.run(self.config_content.size.sub_size, self.background, text_position_info[1])
+            cover_task = draw.run(img=self.background,
+                                  img_info=[{"info_type": "img", "content": cover, "position": (35, 15)}])
+            badge_task = draw.run(img=self.background, img_info=badge_img)
+            await asyncio.gather(title_task, label_task, cover_task, badge_task)
+            return cv.cvtColor(numpy.asarray(self.background), cv.COLOR_RGBA2BGRA)
+
+        except Exception as e:
+            logger.exception("What?!")
+            return None
+
+    async def get_text_position(self, title, label):
+        title_size = self.config_content.size.main_size
+        label_size = self.config_content.size.sub_title_size
+        cal = TextCalculate()
+        title_task = cal.calculate(title_size, self.config_content.color.text_color, 855, 120, 500, 55,
+                                   title)
+        label = cal.calculate(label_size, self.config_content.color.sub_font_color, 1000, 210, 500, 210,
+                              label)
+
+        return await asyncio.gather(title_task, label)
+
+    async def make_badge(self):
+        text = "直播中"
+        font_path = path.join(getcwd(), "Static", "Font", self.config_content.font.main_font_name)
+        font = ImageFont.truetype(font_path, self.config_content.size.sub_size)
+        badge_size = font.getsize(text)
+        bk_pic_size = (badge_size[0] + 20, badge_size[1] + 20)
+        bk_pic = Image.new("RGBA", bk_pic_size, "#fb7299")
+        draw = ImageDraw.Draw(bk_pic)
+        draw.text((10, 5), text, fill=(255, 255, 255, 255), font=font)
+        return [{"info_type": "img", "content": bk_pic, "position": (900, 35)}]
+
+
+class MAJOR_TYPE_MEDIA_LIST(ConfigReader, AbstractMajor, PicGetter):
+    def __init__(self):
+        super().__init__()
+        self.background = None
+
+    async def run(self, major_item: ModuleDynamic, forward: bool = False) -> Union[None, ndarray]:
+        try:
+            if forward:
+                self.background = Image.new("RGBA", (1080, 300), self.config_content.color.forward_color)
+            else:
+                self.background = Image.new("RGBA", (1080, 300), self.config_content.color.backgroud_color)
+            img = ImageDraw.ImageDraw(self.background)
+            img.rectangle(((35, 15), (1045, 285)), fill=self.config_content.color.backgroud_color,
+                          outline='#e5e9ef',
+                          width=2)
+            cover = major_item.dyn_medialist.cover
+            badge_img = await self.make_badge(badge=major_item.dyn_medialist.badge)
+            cover = self.pic_getter(f"{cover}@435w_270h_1c.webp", "PIL").resize((435, 270))
+            text_position_info = await self.get_text_position(major_item.dyn_medialist.title,
+                                                              major_item.dyn_medialist.sub_title)
+            draw = DrawPic()
+            title_task = draw.run(self.config_content.size.uname_size, self.background, text_position_info[0])
+            label_task = draw.run(self.config_content.size.sub_size, self.background, text_position_info[1])
+            cover_task = draw.run(img=self.background,
+                                  img_info=[{"info_type": "img", "content": cover, "position": (35, 15)}])
+            badge_task = draw.run(img=self.background, img_info=badge_img)
+            await asyncio.gather(title_task, label_task, cover_task, badge_task)
+            return cv.cvtColor(numpy.asarray(self.background), cv.COLOR_RGBA2BGRA)
+
+        except Exception as e:
+            logger.exception("What?!")
+            return None
+
+    async def get_text_position(self, title, label):
+        title_size = self.config_content.size.main_size
+        label_size = self.config_content.size.sub_title_size
+        cal = TextCalculate()
+        title_task = cal.calculate(title_size, self.config_content.color.text_color, 855, 120, 500, 55,
+                                   title)
+        label = cal.calculate(label_size, self.config_content.color.sub_font_color, 1000, 210, 500, 210,
+                              label)
+
+        return await asyncio.gather(title_task, label)
+
+    async def make_badge(self, badge):
+        text = badge.text
+        font_path = path.join(getcwd(), "Static", "Font", self.config_content.font.main_font_name)
+        font = ImageFont.truetype(font_path, self.config_content.size.sub_size)
+        badge_size = font.getsize(text)
+        bk_pic_size = (badge_size[0] + 20, badge_size[1] + 20)
+        bk_pic = Image.new("RGBA", bk_pic_size, "#fb7299")
+        draw = ImageDraw.Draw(bk_pic)
+        draw.text((10, 5), text, fill=(255, 255, 255, 255), font=font)
+        return [{"info_type": "img", "content": bk_pic, "position": (900, 35)}]
+
+
 class MajorRender(AbstractMajorRender):
     def __init__(self) -> None:
         pass
 
     async def major_render(self, major_item: ModuleDynamic, forward: bool = False) -> Union[None, ndarray]:
         try:
-            major_map = {0: "MAJOR_TYPE_ARCHIVE", 1: "MAJOR_TYPE_PGC", 5: "MAJOR_TYPE_DRAW", 7: "MAJOR_TYPE_MUSIC",
-                         8: "MAJOR_TYPE_COMMON"}
+            major_map = {0: "MAJOR_TYPE_ARCHIVE", 1: "MAJOR_TYPE_PGC", 2: "MAJOR_TYPE_COURSES_SEASON",
+                         5: "MAJOR_TYPE_DRAW", 6: "MAJOR_TYPE_ARTICLE", 7: "MAJOR_TYPE_MUSIC",
+                         8: "MAJOR_TYPE_COMMON", 9: "MAJOR_TYPE_LIVE", 10: "MAJOR_TYPE_MEDIA_LIST",
+                         13: "MAJOR_TYPE_LIVE_RCMD"}
             major_name = major_map[major_item.type]
             return await eval(f"{major_name}()").run(major_item, forward)
         except KeyError:

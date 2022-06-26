@@ -77,7 +77,7 @@ class Header(AbstractHeadedr, ConfigReader):
                           {
                               "type": "text",
                               "content": auther.ptime_label_text,
-                              "size": self.config_content.size.main_size,
+                              "size": self.config_content.size.sub_title_size,
                               "color": self.config_content.color.sub_font_color,
                               "position": (200, 320)
                           }]

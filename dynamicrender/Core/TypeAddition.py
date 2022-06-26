@@ -8,9 +8,10 @@
 
 from abc import ABCMeta, abstractmethod
 from .Config import ConfigReader
+from numpy import ndarray
 
 
 class AbstractAddition(metaclass=ABCMeta):
     @abstractmethod
-    async def addition_render(self, additional_item):
+    async def addition_render(self, additional_item) -> ndarray:
         pass
