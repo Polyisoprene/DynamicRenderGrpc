@@ -319,6 +319,7 @@ from dynamicrendergrpc.Core.Dynamic import Render
 
 dynamic = dynamics[0]
 
+# 返回的数据格式为bytes
 img_byte = await Render().run(dynamic)
 
 
