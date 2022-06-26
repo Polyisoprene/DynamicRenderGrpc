@@ -1,8 +1,9 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: UTF-8 -*-
 """
-@File    :   Dynamic.py
-@Time    :   2022/05/29 21:42:42
-@Author  :   DMC
+@File    :   DynamicRender -> TypeForward.py
+@IDE     :   PyCharm
+@Time    :   2022/6/23 23:01
+@Author  :   DMC ,
 """
 
 import asyncio
@@ -12,16 +13,16 @@ from os import path, getcwd, listdir, makedirs, mkdir
 
 import cv2 as cv
 import numpy as np
-import sys
 from loguru import logger
+from numpy import ndarray
 
-from .TypeFooter import Footer
-from .TypeHeader import Header
+from .TypeHeader import ForwardHeader
 from .TypeMajor import MajorRender
 from .TypeText import Text
 from .TypeTopic import Topic
 from ..bilibili.app.dynamic.v2.dynamic_pb2 import DynamicItem
-from .TypeForward import ForwardRender
+
+
 # from ..Models import Item
 
 # region
@@ -51,10 +52,6 @@ from .TypeForward import ForwardRender
 # topic_rcmd = 23;       //
 
 # endregion
-
-logger.remove()
-logger.add(sys.stdout,
-           format="<red>[</red><green>{time:YYYY/MM/DD HH:mm:ss}</green><red>]</red> <red>[</red> <green>{level}</green> <red>]</red> {message}")
 
 
 class ConfigInit:
@@ -127,16 +124,15 @@ class DYNAMIC_TYPE_WORD(AbstractRun):
         """
 
         module_type_list = [module.module_type for module in item.modules]
-        tasks = [Header().header_render(item.modules[0].module_author)]
+        tasks = [ForwardHeader().header_render(item.modules[0].module_author_forward)]
         if 23 in module_type_list:
             topic_index = module_type_list.index(23)
-            tasks.insert(topic_index, Topic().topic_render(item.modules[topic_index].module_topic))
+            tasks.insert(topic_index, Topic().topic_render(item.modules[topic_index].module_topic, True))
 
         if 3 in module_type_list:
             topic_index = module_type_list.index(3)
-            tasks.insert(topic_index, Text().text_render(item.modules[topic_index].module_desc))
+            tasks.insert(topic_index, Text().text_render(item.modules[topic_index].module_desc, True))
 
-        tasks.append(Footer().footer_render(item.extend.dyn_id_str))
         all_pic = await asyncio.gather(*tasks)
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
@@ -156,7 +152,7 @@ class DYNAMIC_TYPE_WORD(AbstractRun):
 
 
 class DYNAMIC_TYPE_DRAW(AbstractRun):
-    async def run(self, item: DynamicItem) -> bytes:
+    async def run(self, item: DynamicItem) -> ndarray:
         """渲染的入口函数
 
         :param item: 动态的item部分
@@ -165,20 +161,23 @@ class DYNAMIC_TYPE_DRAW(AbstractRun):
         :rtype: bytes
         """
         module_type_list = [module.module_type for module in item.modules]
-        tasks = [Header().header_render(item.modules[0].module_author), Footer().footer_render(item.extend.dyn_id_str)]
+        # print(item.modules[0].module_author_forward_forward.title[0].text)
+        tasks = [ForwardHeader().header_render(item.modules[0].module_author_forward)]
         if 23 in module_type_list:
             topic_index = module_type_list.index(23)
-            tasks.insert(topic_index, Topic().topic_render(item.modules[topic_index].module_topic))
+            tasks.insert(topic_index, Topic().topic_render(item.modules[topic_index].module_topic, forward=True))
         if 3 in module_type_list:
             text_module_index = module_type_list.index(3)
-            tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
+            tasks.insert(text_module_index,
+                         Text().text_render(item.modules[text_module_index].module_desc, forward=True))
         dynamic_index = module_type_list.index(4)
-        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
+        tasks.insert(dynamic_index,
+                     MajorRender().major_render(item.modules[dynamic_index].module_dynamic, forward=True))
         all_pic = await asyncio.gather(*tasks)
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
 
-    async def assemble(self, pic_list: list) -> bytes:
+    async def assemble(self, pic_list: list) -> ndarray:
         """将各个部分的图片组装成一个完整的图片
 
         :param pic_list: 装有所有图片的列表
@@ -186,14 +185,11 @@ class DYNAMIC_TYPE_DRAW(AbstractRun):
         :return: 完整图片的二进制数据
         :rtype: bytes
         """
-        if len(pic_list) == 1:
-            return np.array(cv.imencode('.png', pic_list[0])[1]).tobytes()
-        img = cv.vconcat(pic_list)
-        return np.array(cv.imencode('.png', img)[1]).tobytes()
+        return pic_list[0] if len(pic_list) == 1 else cv.vconcat(pic_list)
 
 
 class DYNAMIC_TYPE_AV(AbstractRun):
-    async def run(self, item: DynamicItem) -> bytes:
+    async def run(self, item: DynamicItem) -> ndarray:
         """不同类型动态的渲染函数的入口函数
 
         :param item: 动态的item部分
@@ -202,20 +198,21 @@ class DYNAMIC_TYPE_AV(AbstractRun):
         :rtype: bytes
         """
         module_type_list = [module.module_type for module in item.modules]
-        tasks = [Header().header_render(item.modules[0].module_author), Footer().footer_render(item.extend.dyn_id_str)]
+        tasks = [ForwardHeader().header_render(item.modules[0].module_author_forward)]
         if 23 in module_type_list:
             topic_index = module_type_list.index(23)
-            tasks.insert(topic_index, Topic().topic_render(item.modules[topic_index].module_topic))
+            tasks.insert(topic_index, Topic().topic_render(item.modules[topic_index].module_topic, True))
         if 3 in module_type_list:
             text_module_index = module_type_list.index(3)
-            tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
+            tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc, True))
         dynamic_index = module_type_list.index(4)
-        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
+        tasks.insert(dynamic_index,
+                     MajorRender().major_render(item.modules[dynamic_index].module_dynamic, forward=True))
         all_pic = await asyncio.gather(*tasks)
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
 
-    async def assemble(self, pic_list: list) -> bytes:
+    async def assemble(self, pic_list: list) -> ndarray:
         """将各个部分的图片组装成一个完整的图片
 
         :param pic_list: 装有所有图片的列表
@@ -223,10 +220,7 @@ class DYNAMIC_TYPE_AV(AbstractRun):
         :return: 完整图片的二进制数据
         :rtype: bytes
         """
-        if len(pic_list) == 1:
-            return np.array(cv.imencode('.png', pic_list[0])[1]).tobytes()
-        img = cv.vconcat(pic_list)
-        return np.array(cv.imencode('.png', img)[1]).tobytes()
+        return pic_list[0] if len(pic_list) == 1 else cv.vconcat(pic_list)
 
 
 class DYNAMIC_TYPE_LIVE_RCMD(AbstractRun):
@@ -296,7 +290,7 @@ class DYNAMIC_TYPE_ARTICLE(AbstractRun):
 
 
 class DYNAMIC_TYPE_COMMON_VERTICAL(AbstractRun):
-    async def run(self, item: DynamicItem) -> bytes:
+    async def run(self, item: DynamicItem) -> ndarray:
         """不同类型动态的渲染函数的入口函数
 
         :param item: 动态的item部分
@@ -305,20 +299,20 @@ class DYNAMIC_TYPE_COMMON_VERTICAL(AbstractRun):
         :rtype: bytes
         """
         module_type_list = [module.module_type for module in item.modules]
-        tasks = [Header().header_render(item.modules[0].module_author), Footer().footer_render(item.extend.dyn_id_str)]
+        tasks = [ForwardHeader().header_render(item.modules[0].module_author_forward)]
         if 23 in module_type_list:
             topic_index = module_type_list.index(23)
-            tasks.insert(topic_index, Topic().topic_render(item.modules[topic_index].module_topic))
+            tasks.insert(topic_index, Topic().topic_render(item.modules[topic_index].module_topic, True))
         if 3 in module_type_list:
             text_module_index = module_type_list.index(3)
-            tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
+            tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc, True))
         dynamic_index = module_type_list.index(4)
-        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
+        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic, True))
         all_pic = await asyncio.gather(*tasks)
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
 
-    async def assemble(self, pic_list: list) -> bytes:
+    async def assemble(self, pic_list: list) -> ndarray:
         """将各个部分的图片组装成一个完整的图片
 
         :param pic_list: 装有所有图片的列表
@@ -326,10 +320,7 @@ class DYNAMIC_TYPE_COMMON_VERTICAL(AbstractRun):
         :return: 完整图片的二进制数据
         :rtype: bytes
         """
-        if len(pic_list) == 1:
-            return np.array(cv.imencode('.png', pic_list[0])[1]).tobytes()
-        img = cv.vconcat(pic_list)
-        return np.array(cv.imencode('.png', img)[1]).tobytes()
+        return pic_list[0] if len(pic_list) == 1 else cv.vconcat(pic_list)
 
 
 class DYNAMIC_TYPE_COURSES_SEASON(AbstractRun):
@@ -377,7 +368,7 @@ class DYNAMIC_TYPE_MEDIALIST(AbstractRun):
 
 
 class DYNAMIC_TYPE_PGC(AbstractRun):
-    async def run(self, item: DynamicItem) -> bytes:
+    async def run(self, item: DynamicItem) -> ndarray:
         """不同类型动态的渲染函数的入口函数
 
         :param item: 动态的item部分
@@ -386,20 +377,20 @@ class DYNAMIC_TYPE_PGC(AbstractRun):
         :rtype: bytes
         """
         module_type_list = [module.module_type for module in item.modules]
-        tasks = [Header().header_render(item.modules[0].module_author), Footer().footer_render(item.extend.dyn_id_str)]
+        tasks = [ForwardHeader().header_render(item.modules[0].module_author_forward)]
         if 23 in module_type_list:
             topic_index = module_type_list.index(23)
-            tasks.insert(topic_index, Topic().topic_render(item.modules[topic_index].module_topic))
+            tasks.insert(topic_index, Topic().topic_render(item.modules[topic_index].module_topic, True))
         if 3 in module_type_list:
             text_module_index = module_type_list.index(3)
-            tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
+            tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc, True))
         dynamic_index = module_type_list.index(4)
-        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
+        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic, True))
         all_pic = await asyncio.gather(*tasks)
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
 
-    async def assemble(self, pic_list: list) -> bytes:
+    async def assemble(self, pic_list: list) -> ndarray:
         """将各个部分的图片组装成一个完整的图片
 
         :param pic_list: 装有所有图片的列表
@@ -407,14 +398,11 @@ class DYNAMIC_TYPE_PGC(AbstractRun):
         :return: 完整图片的二进制数据
         :rtype: bytes
         """
-        if len(pic_list) == 1:
-            return np.array(cv.imencode('.png', pic_list[0])[1]).tobytes()
-        img = cv.vconcat(pic_list)
-        return np.array(cv.imencode('.png', img)[1]).tobytes()
+        return pic_list[0] if len(pic_list) == 1 else cv.vconcat(pic_list)
 
 
 class DYNAMIC_TYPE_MUSIC(AbstractRun):
-    async def run(self, item: DynamicItem) -> bytes:
+    async def run(self, item: DynamicItem) -> ndarray:
         """不同类型动态的渲染函数的入口函数
 
         :param item: 动态的item部分
@@ -423,20 +411,20 @@ class DYNAMIC_TYPE_MUSIC(AbstractRun):
         :rtype: bytes
         """
         module_type_list = [module.module_type for module in item.modules]
-        tasks = [Header().header_render(item.modules[0].module_author), Footer().footer_render(item.extend.dyn_id_str)]
+        tasks = [ForwardHeader().header_render(item.modules[0].module_author_forward)]
         if 23 in module_type_list:
             topic_index = module_type_list.index(23)
-            tasks.insert(topic_index, Topic().topic_render(item.modules[topic_index].module_topic))
+            tasks.insert(topic_index, Topic().topic_render(item.modules[topic_index].module_topic, True))
         if 3 in module_type_list:
             text_module_index = module_type_list.index(3)
-            tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
+            tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc, True))
         dynamic_index = module_type_list.index(4)
-        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
+        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic, True))
         all_pic = await asyncio.gather(*tasks)
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
 
-    async def assemble(self, pic_list: list) -> bytes:
+    async def assemble(self, pic_list: list) -> ndarray:
         """将各个部分的图片组装成一个完整的图片
 
         :param pic_list: 装有所有图片的列表
@@ -444,10 +432,7 @@ class DYNAMIC_TYPE_MUSIC(AbstractRun):
         :return: 完整图片的二进制数据
         :rtype: bytes
         """
-        if len(pic_list) == 1:
-            return np.array(cv.imencode('.png', pic_list[0])[1]).tobytes()
-        img = cv.vconcat(pic_list)
-        return np.array(cv.imencode('.png', img)[1]).tobytes()
+        return pic_list[0] if len(pic_list) == 1 else cv.vconcat(pic_list)
 
 
 class DYNAMIC_TYPE_COMMON_SQUARE(AbstractRun):
@@ -460,7 +445,7 @@ class DYNAMIC_TYPE_COMMON_SQUARE(AbstractRun):
         :rtype: bytes
         """
         module_type_list = [module.module_type for module in item.modules]
-        tasks = [Header().header_render(item.modules[0].module_author), Footer().footer_render(item.extend.dyn_id_str)]
+        tasks = [ForwardHeader().header_render(item.modules[0].module_author_forward)]
         if 23 in module_type_list:
             topic_index = module_type_list.index(23)
             tasks.insert(topic_index, Topic().topic_render(item.modules[topic_index].module_topic))
@@ -487,46 +472,7 @@ class DYNAMIC_TYPE_COMMON_SQUARE(AbstractRun):
         return np.array(cv.imencode('.png', img)[1]).tobytes()
 
 
-class DYNAMIC_TYPE_FORWARD(AbstractRun):
-    async def run(self, item: DynamicItem) -> bytes:
-        """不同类型动态的渲染函数的入口函数
-
-        :param item: 动态的item部分
-        :type item: Item
-        :return: 渲染完成后的图片的二进制数据
-        :rtype: bytes
-        """
-        module_type_list = [module.module_type for module in item.modules]
-
-        tasks = [Header().header_render(item.modules[0].module_author), Footer().footer_render(item.extend.dyn_id_str)]
-        if 23 in module_type_list:
-            topic_index = module_type_list.index(23)
-            tasks.insert(topic_index, Topic().topic_render(item.modules[topic_index].module_topic))
-        if 3 in module_type_list:
-            text_module_index = module_type_list.index(3)
-            tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
-        dynamic_index = module_type_list.index(4)
-        tasks.insert(dynamic_index, ForwardRender().run(item.modules[dynamic_index].module_dynamic.dyn_forward.item))
-        all_pic = await asyncio.gather(*tasks)
-        temp = [i for i in all_pic if i is not None]
-        return await self.assemble(temp)
-
-
-    async def assemble(self, pic_list: list) -> bytes:
-            """将各个部分的图片组装成一个完整的图片
-
-            :param pic_list: 装有所有图片的列表
-            :type pic_list: list
-            :return: 完整图片的二进制数据
-            :rtype: bytes
-            """
-            if len(pic_list) == 1:
-                return np.array(cv.imencode('.png', pic_list[0])[1]).tobytes()
-            img = cv.vconcat(pic_list)
-            return np.array(cv.imencode('.png', img)[1]).tobytes()
-
-
-class Render(ConfigInit):
+class ForwardRender(ConfigInit):
     def __init__(self) -> None:
         super().__init__()
 
@@ -537,11 +483,12 @@ class Render(ConfigInit):
         :return:
         """
         try:
-            type_map = {0: "DYNAMIC_TYPE_NONE", 1: "DYNAMIC_TYPE_FORWARD", 2: "DYNAMIC_TYPE_AV", 3: "DYNAMIC_TYPE_PGC",
+            type_map = {0: "DYNAMIC_TYPE_NONE", 2: "DYNAMIC_TYPE_AV", 3: "DYNAMIC_TYPE_PGC",
                         6: "DYNAMIC_TYPE_WORD", 7: "DYNAMIC_TYPE_DRAW", 8: "DYNAMIC_TYPE_ARTICLE",
                         9: "DYNAMIC_TYPE_MUSIC", 10: "DYNAMIC_TYPE_COMMON_SQUARE", 11: "DYNAMIC_TYPE_COMMON_VERTICAL",
                         12: "DYNAMIC_TYPE_LIVE", 13: "DYNAMIC_TYPE_MEDIALIST", 14: "DYNAMIC_TYPE_COURSES_SEASON",
                         18: "DYNAMIC_TYPE_LIVE_RCMD"}
+
             type_name = type_map[dynamic.card_type]
             return await eval(f"{type_name}()").run(dynamic)
 
