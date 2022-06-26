@@ -59,9 +59,14 @@ class Text(AbstractText, ConfigReader):
         :return:
         """
         try:
+            # 源文本
             text = dynamic_item.text
+            # 获取源文本中所有的富文本的信息
             all_rich_info = await self.get_all_rich_text(text, dynamic_item.desc)
+            # 所有的文字emoji
             all_emoji = list({i["emoji"] for i in emoji.emoji_lis(text)})
+            # 将文本中的文字emoji（因为文字emoji可能是几个emoji组成的所以将组合emoji全部换成一个字）
+            # 和B站的emoji（B站的emoji形如[夏卜卜_好耶]不好计算，将其换成一个字）
             result = await self.modify_text(all_rich_info["text"], all_rich_info["emoji_new"], all_emoji)
             text = result["text"]
             emoji_new = result["emoji_new"]
@@ -84,7 +89,6 @@ class Text(AbstractText, ConfigReader):
         """
         info_list = []
         emoji_info = []
-        print(text)
         text = text.translate(str.maketrans({'\r': '', chr(65039): '', chr(65038): '', chr(8205): ''}))
         for rich_text in rich_text_nodes:
 

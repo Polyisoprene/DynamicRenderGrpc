@@ -5,7 +5,6 @@
 @Author  :   DMC
 """
 
-
 from abc import ABCMeta, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
@@ -78,10 +77,10 @@ class Header(AbstractHeadedr, ConfigReader):
                           {
                               "type": "text",
                               "content": auther.ptime_label_text,
-                              "size": self.config_content.size.main_size,
+                              "size": self.config_content.size.sub_title_size,
                               "color": self.config_content.color.sub_font_color,
                               "position": (200, 320)
-        }]
+                          }]
 
         url_info_list = [{"type": "face",
                           "url": f"{auther.author.face}@120w_120h_1c_1s.webp",
@@ -213,3 +212,26 @@ class Header(AbstractHeadedr, ConfigReader):
         else:
             img = info_dict["content"]
             self.back_groud_img.paste(img, info_dict["position"], img)
+
+
+class ForwardHeader(AbstractHeadedr, ConfigReader):
+    def __init__(self):
+        super().__init__()
+
+    async def header_render(self, author: ModuleAuthor):
+        """
+
+        :param author:
+        :return:
+        """
+        name = author.title[0].text
+        font = ImageFont.truetype(path.join(getcwd(), "Static", "Font",
+                                            self.config_content.font.main_font_name),
+                                  self.config_content.size.uname_size)
+        font_size = font.getsize(name)
+        height = font_size[1] + 40
+        background = Image.new("RGBA", (1080, height), self.config_content.color.forward_color)
+        draw = ImageDraw.Draw(background)
+        draw.text((35, 20), name, self.config_content.color.extra_color, font)
+
+        return cv.cvtColor(np.asarray(background), cv.COLOR_RGBA2BGRA)

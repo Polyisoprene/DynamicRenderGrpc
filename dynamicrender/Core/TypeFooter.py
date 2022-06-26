@@ -47,7 +47,7 @@ class Footer(AbstractFooter, ConfigReader):
             bili_pic = bili_pic.resize(
                 (int(bili_pic.size[0] / 4), int(bili_pic.size[1] / 4)))
             font = ImageFont.truetype(path.join(
-                relative_path, "Static", "Font", self.config_content.font.main_font_name), 30, encoding='utf-8')
+                relative_path, "Static", "Font", self.config_content.font.main_font_name), 20, encoding='utf-8')
             draw = ImageDraw.Draw(self.background, "RGBA")
             draw.text((50, 200), "扫描二维码查看动态", font=font, fill="#ff4e80")
             self.background.paste(bili_pic, (50, 90), bili_pic)

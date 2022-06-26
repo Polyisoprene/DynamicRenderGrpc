@@ -24,9 +24,10 @@ from .Dynamic import logger
 
 
 class PicGetter:
-    def pic_getter(self, url, mode: str = "ndarry") -> Union[ndarray, None]:
+    def pic_getter(self, url, mode: str = "ndarry") -> Union[ndarray, Image.Image, None]:
         """请求图片的函数
 
+        :param mode:
         :param url: 图片url
         :type url: str
         :return: 下载完成并被转换成四通道的ndarray数据
@@ -34,13 +35,10 @@ class PicGetter:
         """
         try:
             response = httpx.get(url)
-            if mode == "ndarry":
-                img = cv.imdecode(np.asarray(
-                    bytearray(response.content), dtype='uint8'), -1)
-                return self.convert_png(img)
-            else:
-                img = Image.open(BytesIO(response.content)).convert("RGBA")
-                return img
+            image = Image.open(BytesIO(response.content)).convert("RGBA")
+            if mode != "ndarry":
+                return image
+            return cv.cvtColor(np.asarray(image), cv.COLOR_RGBA2BGRA)
         except Exception as e:
             logger.exception("What?!")
             return None
@@ -105,8 +103,6 @@ class TextCalculate(ConfigReader):
                     "start_x": start_x, "start_y": start_y, "text": all_emoji["text"],
                     "emoji_list": all_emoji["emoji_text"], "font_color": font_color}
             return await self.calculate_text_position(**keys)
-
-
         except Exception as e:
             logger.error("计算文字错误")
             return
@@ -142,7 +138,7 @@ class TextCalculate(ConfigReader):
                     y += y_interval
                     if y > y_constraint:
                         position_info[-1] = {"info_type": "text", "content": "...",
-                                             "position": position_info[-1]["position"], "color": font_color}
+                                             "position": position_info[-1]["position"], "font_color": font_color}
                         break
                 continue
             position_info.append(
@@ -194,7 +190,8 @@ class TextCalculate(ConfigReader):
         :return:
         """
         size = font.getsize(text)
-        img = Image.new("RGBA", size)
+        img_size = min(size)
+        img = Image.new("RGBA", (img_size, img_size))
         draw = ImageDraw.Draw(img)
         draw.text(xy=(0, 0), text=text, font=font, embedded_color=True)
         return img.resize((main_font_size, main_font_size))

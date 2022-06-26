@@ -32,6 +32,7 @@ class Size(BaseModel):
     main_size: int
     sub_size: int
     emoji_size: int
+    sub_title_size:int
 
 
 class ConfigModel(BaseModel):
