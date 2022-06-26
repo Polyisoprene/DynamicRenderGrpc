@@ -3,17 +3,9 @@
 
 # 使用示例
 
-```python
 
-pip install dynamicrendergrpc
-
-
-from dynamicrendergrpc.Core.Dynamic import Render
-
-
-# dynamic为grpc返回的单个dynamic
-
-# 例如
+例如
+有这么一个dynamics
 <details>
   <summary>展开查看</summary>
   <pre><code> 
@@ -311,6 +303,19 @@ from dynamicrendergrpc.Core.Dynamic import Render
   }
   </code></pre>
 </details>
+
+
+```python
+
+pip install dynamicrendergrpc
+
+
+from dynamicrendergrpc.Core.Dynamic import Render
+
+
+# dynamic为grpc返回的单个dynamic
+
+
 
 dynamic = dynamics[0]
 
