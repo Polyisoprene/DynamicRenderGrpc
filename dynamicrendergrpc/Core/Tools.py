@@ -143,8 +143,7 @@ class TextCalculate(ConfigReader):
                 continue
             position_info.append(
                 {"info_type": "text", "content": word, "position": (x, y), "font_color": font_color})
-            x += self.standby_font.getsize(word)[0] if ord(word) not in self.font_key else self.main_font.getsize(word)[
-                0]
+            x += self.standby_font.getsize(word)[0] if ord(word) not in self.font_key else self.main_font.getsize(word)[0]
             if x > x_constraint:
                 x = start_x
                 y += y_interval
@@ -207,9 +206,8 @@ class DrawPic(ConfigReader):
         self.relative_path = getcwd()
 
         self.font_key = \
-            TTFont(path.join(self.relative_path, "Static", "Font", self.config_content.font.main_font_name),
-                   fontNumber=0)[
-                'cmap'].tables[0].ttFont.getBestCmap().keys()
+        TTFont(path.join(self.relative_path, "Static", "Font", self.config_content.font.main_font_name), fontNumber=0)[
+            'cmap'].tables[0].ttFont.getBestCmap().keys()
         self.img = None
         self.main_font = None
         self.standby_font = None
