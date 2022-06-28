@@ -1,0 +1,23 @@
+{
+    "color":{
+        "backgroud_color":"#ffffff",
+        "forward_color":"#f4f5f7",
+        "text_color":"black",
+        "sub_font_color":"#99a2aa",
+        "extra_color": "#00a1d6",
+        "bili_pink":"#fb6b94"
+    },
+    "font":{
+        "main_font_name":"HanaMinA.ttf",
+        "standby_font_name" : "Unifont.ttf",
+        "emoji_font_name" : "nte.ttf"
+    },
+    "size":{
+        "uname_size":45,
+        "main_size":40,
+        "sub_size":30,
+        "emoji_size":109,
+        "sub_title_size": 35
+
+    }
+}
