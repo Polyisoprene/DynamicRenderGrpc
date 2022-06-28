@@ -55,10 +55,9 @@ class ADDITIONAL_RESERVE(ConfigReader, AbstractAdditionalRender):
             label = f"{additional_item.up.desc_text_1.text} · {additional_item.up.desc_text_2}"
             text_position_info = await self.get_text_position_info(title, label)
             btn_info = await self.get_btn_info(additional_item.up.button)
-            draw = DrawPic()
-            title_task = draw.run(self.config_content.size.main_size, self.background, text_position_info[0])
-            label_task = draw.run(self.config_content.size.sub_size, self.background, text_position_info[1])
-            btn_task = draw.run(self.config_content.size.sub_size, self.background, btn_info)
+            title_task = DrawPic().run(self.config_content.size.main_size, self.background, text_position_info[0])
+            label_task = DrawPic().run(self.config_content.size.sub_size, self.background, text_position_info[1])
+            btn_task = DrawPic().run(self.config_content.size.sub_size, self.background, btn_info)
             await asyncio.gather(title_task, label_task, btn_task)
             return cv.cvtColor(numpy.asarray(self.background), cv.COLOR_RGBA2BGRA)
         except Exception as e:
@@ -124,10 +123,9 @@ class ADDITIONAL_GOODS(ConfigReader, AbstractAdditionalRender):
         cover_info_task = self.get_cover(additional_item.goods.goods_items[0].cover)
 
         result = await asyncio.gather(text_info_task, cover_info_task)
-        draw = DrawPic()
-        title_task = draw.run(self.config_content.size.main_size, self.background, img_info=result[0][0])
-        price_task = draw.run(self.config_content.size.main_size, self.background, img_info=result[0][1])
-        cover_task = draw.run(self.config_content.size.sub_size, self.background, img_info=result[1])
+        title_task = DrawPic().run(self.config_content.size.main_size, self.background, img_info=result[0][0])
+        price_task = DrawPic().run(self.config_content.size.main_size, self.background, img_info=result[0][1])
+        cover_task = DrawPic().run(self.config_content.size.sub_size, self.background, img_info=result[1])
         await asyncio.gather(title_task, price_task, cover_task)
 
     async def get_text_position(self, title, price):
@@ -199,13 +197,12 @@ class ADDITIONAL_COMMON(ConfigReader, AbstractAdditionalRender):
         make_btn_task = self.make_btn(additional_item.common.button)
 
         result = await asyncio.gather(get_text_position_task, get_cover_task, make_btn_task)
-        draw = DrawPic()
         title_size = self.config_content.size.main_size
         desc_size = self.config_content.size.sub_size
-        title_task = draw.run(title_size, self.background, result[0][0])
-        cover_task = draw.run(img=self.background, img_info=result[1])
-        desc_task1 = draw.run(desc_size, self.background, result[0][1])
-        btn_task = draw.run(desc_size, self.background, result[2])
+        title_task = DrawPic().run(title_size, self.background, result[0][0])
+        cover_task = DrawPic().run(img=self.background, img_info=result[1])
+        desc_task1 = DrawPic().run(desc_size, self.background, result[0][1])
+        btn_task = DrawPic().run(desc_size, self.background, result[2])
         await asyncio.gather(title_task, desc_task1, cover_task, btn_task)
 
     async def common_with_desc_text_2(self, additional_item):
@@ -218,14 +215,13 @@ class ADDITIONAL_COMMON(ConfigReader, AbstractAdditionalRender):
         make_btn_task = self.make_btn(additional_item.common.button)
 
         result = await asyncio.gather(get_text_position_task, get_cover_task, make_btn_task)
-        draw = DrawPic()
         title_size = self.config_content.size.main_size
         desc_size = self.config_content.size.sub_size
-        title_task = draw.run(title_size, self.background, result[0][0])
-        cover_task = draw.run(img=self.background, img_info=result[1])
-        desc_task1 = draw.run(desc_size, self.background, result[0][1])
-        desc_task2 = draw.run(desc_size, self.background, result[0][2])
-        btn_task = draw.run(desc_size, self.background, result[2])
+        title_task = DrawPic().run(title_size, self.background, result[0][0])
+        cover_task = DrawPic().run(img=self.background, img_info=result[1])
+        desc_task1 = DrawPic().run(desc_size, self.background, result[0][1])
+        desc_task2 = DrawPic().run(desc_size, self.background, result[0][2])
+        btn_task = DrawPic().run(desc_size, self.background, result[2])
         await asyncio.gather(title_task, desc_task1, desc_task2, cover_task, btn_task)
 
     async def get_text_position(self, title, desc_text1, desc_text2=None):
@@ -233,14 +229,14 @@ class ADDITIONAL_COMMON(ConfigReader, AbstractAdditionalRender):
         desc_size = self.config_content.size.sub_size
         counter = TextCalculate()
         if desc_text2:
-            title_task = counter.calculate(title_size, self.config_content.color.text_color, 815, 70, 280, 70, title)
+            title_task = counter.calculate(title_size, self.config_content.color.text_color, 815, 70, 280, 60, title)
             desc_text1_task = counter.calculate(desc_size, self.config_content.color.sub_font_color, 815, 135, 280, 135,
                                                 desc_text1)
             desc_text_2_task = counter.calculate(desc_size, self.config_content.color.sub_font_color, 815, 195, 280,
                                                  195, desc_text2)
             return await asyncio.gather(title_task, desc_text1_task, desc_text_2_task)
         else:
-            title_task = counter.calculate(title_size, self.config_content.color.text_color, 815, 80, 280, 80, title)
+            title_task = counter.calculate(title_size, self.config_content.color.text_color, 815, 80, 280, 70, title)
             desc_text1_task = counter.calculate(desc_size, self.config_content.color.sub_font_color, 815, 150, 280, 150,
                                                 desc_text1)
             return await asyncio.gather(title_task, desc_text1_task)
@@ -274,7 +270,7 @@ class ADDITIONAL_UGC(ConfigReader, AbstractAdditionalRender):
     async def run(self, additional_item, forward: bool) -> Union[ndarray, None]:
         try:
             if forward:
-                self.background = Image.new("RGBA", (1080, 28), self.config_content.color.forward_color)
+                self.background = Image.new("RGBA", (1080, 280), self.config_content.color.forward_color)
                 img = ImageDraw.ImageDraw(self.background)
                 img.rectangle(((35, 20), (1045, 260)), fill=self.config_content.color.backgroud_color,
                               outline='#e5e9ef',
@@ -291,11 +287,10 @@ class ADDITIONAL_UGC(ConfigReader, AbstractAdditionalRender):
             result = await asyncio.gather(text_position_task, cover_position_task, duration_position_task)
             title_size = self.config_content.size.main_size
             desc_size = self.config_content.size.sub_size
-            draw = DrawPic()
-            title_task = draw.run(title_size, self.background, result[0][0])
-            desc_task = draw.run(desc_size, self.background, result[0][1])
-            cover_task = draw.run(img=self.background, img_info=result[1])
-            duration_task = draw.run(desc_size, self.background, result[2])
+            title_task = DrawPic().run(title_size, self.background, result[0][0])
+            desc_task = DrawPic().run(desc_size, self.background, result[0][1])
+            cover_task = DrawPic().run(img=self.background, img_info=result[1])
+            duration_task = DrawPic().run(desc_size, self.background, result[2])
             await asyncio.gather(title_task, desc_task, cover_task, duration_task)
             return cv.cvtColor(numpy.asarray(self.background), cv.COLOR_RGBA2BGRA)
         except Exception as e:
@@ -325,6 +320,60 @@ class ADDITIONAL_UGC(ConfigReader, AbstractAdditionalRender):
                 {"info_type": "text", "content": duration,
                  "position": (260, 170),
                  "font_color": "#ffffff"}]
+
+
+class ADDITIONAL_VOTE(ConfigReader, AbstractAdditionalRender):
+    def __init__(self):
+        super().__init__()
+        self.background = None
+
+    async def run(self, additional_item, forward: bool) -> Union[ndarray, None]:
+        try:
+            if forward:
+                self.background = Image.new("RGBA", (1080, 280), self.config_content.color.forward_color)
+                img = ImageDraw.ImageDraw(self.background)
+                img.rectangle(((35, 20), (1045, 260)), fill=self.config_content.color.backgroud_color,
+                              outline='#e5e9ef',
+                              width=2)
+            else:
+                self.background = Image.new("RGBA", (1080, 280), self.config_content.color.backgroud_color)
+                img = ImageDraw.ImageDraw(self.background)
+                img.rectangle(((35, 20), (1045, 260)), fill=self.config_content.color.forward_color,
+                              outline='#e5e9ef',
+                              width=2)
+            text_position_task = self.get_text_position(additional_item.vote2.title, additional_item.vote2.label)
+            cover_position_task = self.get_cover()
+            result = await asyncio.gather(text_position_task, cover_position_task)
+            title_size = self.config_content.size.main_size
+            label_size = self.config_content.size.sub_size
+
+            text_task = DrawPic().run(title_size, self.background, result[0][0])
+            label_task = DrawPic().run(label_size, self.background, result[0][1])
+            cover_task = DrawPic().run(label_size, self.background, result[1])
+            await asyncio.gather(text_task,label_task,cover_task)
+
+            return cv.cvtColor(numpy.asarray(self.background), cv.COLOR_RGBA2BGRA)
+        except Exception as e:
+            logger.exception("What?!")
+            return None
+
+    async def get_text_position(self, title, label):
+        title_size = self.config_content.size.main_size
+        label_size = self.config_content.size.sub_size
+        counter = TextCalculate()
+        title_task = counter.calculate(title_size, self.config_content.color.text_color, 1000, 130, 280, 65, title)
+        desc_text_task = counter.calculate(label_size, self.config_content.color.sub_font_color, 1000, 160, 280, 160,
+                                           label)
+
+        return await asyncio.gather(title_task, desc_text_task)
+
+    async def get_cover(self):
+        cover_path = path.join(getcwd(), "Static", "Picture", "vote_icon.png")
+        cover = Image.open(cover_path).convert("RGBA").resize((195, 195))
+        bili_pink = self.config_content.color.bili_pink
+        return [{"info_type": "img", "content": cover, "position": (60, 45)}, {"info_type": "text", "content": "去看看 >",
+                                                                               "position": (900, 195),
+                                                                               "font_color": bili_pink}]
 
 
 class AdditionalRender(AbstractAddition):

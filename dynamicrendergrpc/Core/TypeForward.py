@@ -18,6 +18,7 @@ from .TypeHeader import ForwardHeader
 from .TypeMajor import MajorRender
 from .TypeText import Text
 from .TypeTopic import Topic
+from .TypeAddition import AdditionalRender
 from ..bilibili.app.dynamic.v2.dynamic_pb2 import DynamicItem
 
 
@@ -64,7 +65,10 @@ class DYNAMIC_TYPE_WORD(AbstractRun):
         if 3 in module_type_list:
             topic_index = module_type_list.index(3)
             tasks.insert(topic_index, Text().text_render(item.modules[topic_index].module_desc, True))
-
+        if 8 in module_type_list:
+            additional_module_index = module_type_list.index(8)
+            tasks.insert(additional_module_index,
+                         AdditionalRender().addition_render(item.modules[additional_module_index].module_additional,True))
         all_pic = await asyncio.gather(*tasks)
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
@@ -104,6 +108,10 @@ class DYNAMIC_TYPE_DRAW(AbstractRun):
         dynamic_index = module_type_list.index(4)
         tasks.insert(dynamic_index,
                      MajorRender().major_render(item.modules[dynamic_index].module_dynamic, forward=True))
+        if 8 in module_type_list:
+            additional_module_index = module_type_list.index(8)
+            tasks.insert(additional_module_index,
+                         AdditionalRender().addition_render(item.modules[additional_module_index].module_additional,True))
         all_pic = await asyncio.gather(*tasks)
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
@@ -139,6 +147,10 @@ class DYNAMIC_TYPE_AV(AbstractRun):
         dynamic_index = module_type_list.index(4)
         tasks.insert(dynamic_index,
                      MajorRender().major_render(item.modules[dynamic_index].module_dynamic, forward=True))
+        if 8 in module_type_list:
+            additional_module_index = module_type_list.index(8)
+            tasks.insert(additional_module_index,
+                         AdditionalRender().addition_render(item.modules[additional_module_index].module_additional,True))
         all_pic = await asyncio.gather(*tasks)
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
@@ -177,6 +189,10 @@ class DYNAMIC_TYPE_LIVE_RCMD(AbstractRun):
         dynamic_index = module_type_list.index(4)
         tasks.insert(dynamic_index,
                      MajorRender().major_render(item.modules[dynamic_index].module_dynamic, forward=True))
+        if 8 in module_type_list:
+            additional_module_index = module_type_list.index(8)
+            tasks.insert(additional_module_index,
+                         AdditionalRender().addition_render(item.modules[additional_module_index].module_additional,True))
         all_pic = await asyncio.gather(*tasks)
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
@@ -215,6 +231,10 @@ class DYNAMIC_TYPE_LIVE(AbstractRun):
         dynamic_index = module_type_list.index(4)
         tasks.insert(dynamic_index,
                      MajorRender().major_render(item.modules[dynamic_index].module_dynamic, forward=True))
+        if 8 in module_type_list:
+            additional_module_index = module_type_list.index(8)
+            tasks.insert(additional_module_index,
+                         AdditionalRender().addition_render(item.modules[additional_module_index].module_additional,True))
         all_pic = await asyncio.gather(*tasks)
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
@@ -249,6 +269,10 @@ class DYNAMIC_TYPE_ARTICLE(AbstractRun):
             tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc, True))
         dynamic_index = module_type_list.index(4)
         tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic, True))
+        if 8 in module_type_list:
+            additional_module_index = module_type_list.index(8)
+            tasks.insert(additional_module_index,
+                         AdditionalRender().addition_render(item.modules[additional_module_index].module_additional,True))
         all_pic = await asyncio.gather(*tasks)
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
@@ -283,6 +307,10 @@ class DYNAMIC_TYPE_COMMON_VERTICAL(AbstractRun):
             tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc, True))
         dynamic_index = module_type_list.index(4)
         tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic, True))
+        if 8 in module_type_list:
+            additional_module_index = module_type_list.index(8)
+            tasks.insert(additional_module_index,
+                         AdditionalRender().addition_render(item.modules[additional_module_index].module_additional,True))
         all_pic = await asyncio.gather(*tasks)
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
@@ -317,6 +345,10 @@ class DYNAMIC_TYPE_COURSES_SEASON(AbstractRun):
             tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc, True))
         dynamic_index = module_type_list.index(4)
         tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic, True))
+        if 8 in module_type_list:
+            additional_module_index = module_type_list.index(8)
+            tasks.insert(additional_module_index,
+                         AdditionalRender().addition_render(item.modules[additional_module_index].module_additional,True))
         all_pic = await asyncio.gather(*tasks)
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
@@ -354,6 +386,10 @@ class DYNAMIC_TYPE_MEDIA_LIST(AbstractRun):
             tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc, True))
         dynamic_index = module_type_list.index(4)
         tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic, True))
+        if 8 in module_type_list:
+            additional_module_index = module_type_list.index(8)
+            tasks.insert(additional_module_index,
+                         AdditionalRender().addition_render(item.modules[additional_module_index].module_additional,True))
         all_pic = await asyncio.gather(*tasks)
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
@@ -391,6 +427,10 @@ class DYNAMIC_TYPE_PGC(AbstractRun):
             tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc, True))
         dynamic_index = module_type_list.index(4)
         tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic, True))
+        if 8 in module_type_list:
+            additional_module_index = module_type_list.index(8)
+            tasks.insert(additional_module_index,
+                         AdditionalRender().addition_render(item.modules[additional_module_index].module_additional,True))
         all_pic = await asyncio.gather(*tasks)
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
@@ -425,6 +465,10 @@ class DYNAMIC_TYPE_MUSIC(AbstractRun):
             tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc, True))
         dynamic_index = module_type_list.index(4)
         tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic, True))
+        if 8 in module_type_list:
+            additional_module_index = module_type_list.index(8)
+            tasks.insert(additional_module_index,
+                         AdditionalRender().addition_render(item.modules[additional_module_index].module_additional,True))
         all_pic = await asyncio.gather(*tasks)
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
@@ -459,6 +503,10 @@ class DYNAMIC_TYPE_COMMON_SQUARE(AbstractRun):
             tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
         dynamic_index = module_type_list.index(4)
         tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
+        if 8 in module_type_list:
+            additional_module_index = module_type_list.index(8)
+            tasks.insert(additional_module_index,
+                         AdditionalRender().addition_render(item.modules[additional_module_index].module_additional,True))
         all_pic = await asyncio.gather(*tasks)
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
