@@ -20,7 +20,7 @@ from PIL import ImageFont
 from numpy import ndarray
 
 from .Dynamic import logger
-from bilibili.app.dynamic.v2.dynamic_pb2 import ModuleTopic
+from ..bilibili.app.dynamic.v2.dynamic_pb2 import ModuleTopic
 from .Config import ConfigReader
 
 

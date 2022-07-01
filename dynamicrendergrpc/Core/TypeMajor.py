@@ -18,7 +18,7 @@ import numpy as np
 from PIL import Image, ImageFont, ImageDraw
 from numpy import ndarray
 
-from bilibili.app.dynamic.v2.dynamic_pb2 import ModuleDynamic, MdlDynDrawItem
+from ..bilibili.app.dynamic.v2.dynamic_pb2 import ModuleDynamic, MdlDynDrawItem
 from .Config import ConfigReader
 from .Dynamic import logger
 from .Tools import PicGetter, TextCalculate, DrawPic
@@ -152,6 +152,7 @@ class MAJOR_TYPE_ARCHIVE(ConfigReader, AbstractMajor, PicGetter):
         :return:
         """
         try:
+            # print(major_item)
             if forward:
                 self.background = Image.new("RGBA", (1080, 695), self.config_content.color.forward_color)
             else:

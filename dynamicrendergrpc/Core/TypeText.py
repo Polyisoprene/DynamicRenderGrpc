@@ -18,7 +18,7 @@ import numpy
 from PIL import Image, ImageFont, ImageDraw
 from fontTools.ttLib import TTFont
 
-from bilibili.app.dynamic.v2.dynamic_pb2 import ModuleDesc
+from ..bilibili.app.dynamic.v2.dynamic_pb2 import ModuleDesc
 from .Config import ConfigReader
 from .Dynamic import logger
 
