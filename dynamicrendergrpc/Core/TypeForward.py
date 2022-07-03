@@ -47,13 +47,13 @@ class AbstractRun(metaclass=ABCMeta):
 
 
 class DYNAMIC_TYPE_WORD(AbstractRun):
-    async def run(self, item: DynamicItem) -> bytes:
+    async def run(self, item: DynamicItem) -> ndarray:
         """不同类型动态的渲染函数的入口函数
 
         :param item: 动态的item部分
         :type item: DynamicItem
         :return: 渲染完成后的图片的二进制数据
-        :rtype: bytes
+        :rtype: ndarray
         """
 
         module_type_list = [module.module_type for module in item.modules]
@@ -73,7 +73,7 @@ class DYNAMIC_TYPE_WORD(AbstractRun):
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
 
-    async def assemble(self, pic_list: list) -> bytes:
+    async def assemble(self, pic_list: list) -> ndarray:
         """将各个部分的图片组装成一个完整的图片
 
         :param pic_list: 装有所有图片的列表
@@ -81,10 +81,7 @@ class DYNAMIC_TYPE_WORD(AbstractRun):
         :return: 完整图片的二进制数据
         :rtype: bytes
         """
-        if len(pic_list) == 1:
-            return np.array(cv.imencode('.png', pic_list[0])[1]).tobytes()
-        img = cv.vconcat(pic_list)
-        return np.array(cv.imencode('.png', img)[1]).tobytes()
+        return pic_list[0] if len(pic_list) == 1 else cv.vconcat(pic_list)
 
 
 class DYNAMIC_TYPE_DRAW(AbstractRun):
@@ -251,7 +248,7 @@ class DYNAMIC_TYPE_LIVE(AbstractRun):
 
 
 class DYNAMIC_TYPE_ARTICLE(AbstractRun):
-    async def run(self, item: DynamicItem) -> bytes:
+    async def run(self, item: DynamicItem) -> ndarray:
         """不同类型动态的渲染函数的入口函数
 
         :param item: 动态的item部分
@@ -277,7 +274,7 @@ class DYNAMIC_TYPE_ARTICLE(AbstractRun):
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
 
-    async def assemble(self, pic_list: list) -> bytes:
+    async def assemble(self, pic_list: list) -> ndarray:
         """将各个部分的图片组装成一个完整的图片
 
         :param pic_list: 装有所有图片的列表
@@ -327,7 +324,7 @@ class DYNAMIC_TYPE_COMMON_VERTICAL(AbstractRun):
 
 
 class DYNAMIC_TYPE_COURSES_SEASON(AbstractRun):
-    async def run(self, item: DynamicItem) -> bytes:
+    async def run(self, item: DynamicItem) -> ndarray:
         """不同类型动态的渲染函数的入口函数
 
         :param item: 动态的item部分
@@ -353,7 +350,7 @@ class DYNAMIC_TYPE_COURSES_SEASON(AbstractRun):
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
 
-    async def assemble(self, pic_list: list) -> bytes:
+    async def assemble(self, pic_list: list) -> ndarray:
         """将各个部分的图片组装成一个完整的图片
 
         :param pic_list: 装有所有图片的列表
