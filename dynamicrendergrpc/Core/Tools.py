@@ -5,6 +5,7 @@
 @Author  :   DMC
 """
 import asyncio
+import re
 from io import BytesIO
 from os import getcwd
 from os import path
@@ -34,6 +35,8 @@ class PicGetter:
         :rtype: ndarray
         """
         try:
+            if not (re.match("^http://i1.hdslb.com/bfs/",url) or re.match("^https://i1.hdslb.com/bfs/",url)):
+                url = re.compile(r"@(.*?).webp").sub('', url)
             response = httpx.get(url)
             image = Image.open(BytesIO(response.content)).convert("RGBA")
             if mode != "ndarry":

@@ -24,7 +24,7 @@ from ..bilibili.app.dynamic.v2.dynamic_pb2 import DynamicItem
 
 class AbstractRun(metaclass=ABCMeta):
     @abstractmethod
-    async def assemble(self, pic_list: list) -> bytes:
+    async def assemble(self, pic_list: list) -> ndarray:
         """将各个部分的图片组装成一个完整的图片
 
         :param pic_list: 装有所有图片的列表
@@ -35,7 +35,7 @@ class AbstractRun(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    async def run(self, item: DynamicItem) -> bytes:
+    async def run(self, item: DynamicItem) -> ndarray:
         """各个种类的动态的渲染函数的入口函数
 
         :param item: 动态的item部分
@@ -482,7 +482,7 @@ class DYNAMIC_TYPE_MUSIC(AbstractRun):
 
 
 class DYNAMIC_TYPE_COMMON_SQUARE(AbstractRun):
-    async def run(self, item: DynamicItem) -> bytes:
+    async def run(self, item: DynamicItem) -> ndarray:
         """不同类型动态的渲染函数的入口函数
 
         :param item: 动态的item部分
@@ -494,12 +494,12 @@ class DYNAMIC_TYPE_COMMON_SQUARE(AbstractRun):
         tasks = [ForwardHeader().header_render(item.modules[0].module_author_forward)]
         if 23 in module_type_list:
             topic_index = module_type_list.index(23)
-            tasks.insert(topic_index, Topic().topic_render(item.modules[topic_index].module_topic))
+            tasks.insert(topic_index, Topic().topic_render(item.modules[topic_index].module_topic,True))
         if 3 in module_type_list:
             text_module_index = module_type_list.index(3)
-            tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
+            tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc,True))
         dynamic_index = module_type_list.index(4)
-        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
+        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic,True))
         if 8 in module_type_list:
             additional_module_index = module_type_list.index(8)
             tasks.insert(additional_module_index,
@@ -508,7 +508,7 @@ class DYNAMIC_TYPE_COMMON_SQUARE(AbstractRun):
         temp = [i for i in all_pic if i is not None]
         return await self.assemble(temp)
 
-    async def assemble(self, pic_list: list) -> bytes:
+    async def assemble(self, pic_list: list) -> ndarray:
         """将各个部分的图片组装成一个完整的图片
 
         :param pic_list: 装有所有图片的列表
@@ -517,14 +517,13 @@ class DYNAMIC_TYPE_COMMON_SQUARE(AbstractRun):
         :rtype: bytes
         """
         if len(pic_list) == 1:
-            return np.array(cv.imencode('.png', pic_list[0])[1]).tobytes()
-        img = cv.vconcat(pic_list)
-        return np.array(cv.imencode('.png', img)[1]).tobytes()
+            return pic_list[0]
+        return cv.vconcat(pic_list)
 
 
 class ForwardRender:
 
-    async def run(self, dynamic: DynamicItem) -> bytes:
+    async def run(self, dynamic: DynamicItem) -> ndarray:
         """
         入口函数
         :param dynamic:
