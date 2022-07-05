@@ -140,7 +140,7 @@ class ADDITIONAL_GOODS(ConfigReader, AbstractAdditionalRender):
     async def get_cover(self, cover):
         bili_pink = self.config_content.color.bili_pink
         cover_url = f"{cover}@190w_190h_1c.webp"
-        cover = PicGetter().pic_getter(cover_url, "PIL")
+        cover = PicGetter().pic_getter(cover_url, "PIL").resize((190, 190))
         return [{"info_type": "img", "content": cover, "position": (60, 45)}, {"info_type": "text", "content": "去看看 >",
                                                                                "position": (900, 195),
                                                                                "font_color": bili_pink}]

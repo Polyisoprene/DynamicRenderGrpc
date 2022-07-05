@@ -35,7 +35,8 @@ class PicGetter:
         :rtype: ndarray
         """
         try:
-            if not (re.match("^http://i1.hdslb.com/bfs/",url) or re.match("^https://i1.hdslb.com/bfs/",url)):
+            if not (re.match("^http://i1.hdslb.com/bfs/",url) or re.match("^https://i1.hdslb.com/bfs/",url) or
+                    re.match("^https://i0.hdslb.com/bfs/",url)):
                 url = re.compile(r"@(.*?).webp").sub('', url)
             response = httpx.get(url)
             image = Image.open(BytesIO(response.content)).convert("RGBA")

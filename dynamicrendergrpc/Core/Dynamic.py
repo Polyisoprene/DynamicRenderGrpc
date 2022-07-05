@@ -24,10 +24,8 @@ from .TypeTopic import Topic
 from ..bilibili.app.dynamic.v2.dynamic_pb2 import DynamicItem
 
 
-
-# logger.remove()
-# logger.add(sys.stdout,
-#            format="<red>[</red><green>{time:YYYY/MM/DD HH:mm:ss}</green><red>]</red> <red>[</red> <green>{level}</green> <red>]</red> {message}")
+# logger.remove() logger.add(sys.stdout, format="<red>[</red><green>{time:YYYY/MM/DD HH:mm:ss}</green><red>]</red>
+# <red>[</red> <green>{level}</green> <red>]</red> {message}")
 
 
 class ConfigInit:
