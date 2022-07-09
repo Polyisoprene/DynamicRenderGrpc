@@ -24,8 +24,6 @@ from .TypeTopic import Topic
 from ..bilibili.app.dynamic.v2.dynamic_pb2 import DynamicItem
 
 
-# logger.remove() logger.add(sys.stdout, format="<red>[</red><green>{time:YYYY/MM/DD HH:mm:ss}</green><red>]</red>
-# <red>[</red> <green>{level}</green> <red>]</red> {message}")
 
 
 class ConfigInit:
@@ -147,8 +145,9 @@ class DYNAMIC_TYPE_DRAW(AbstractRun):
         if 3 in module_type_list:
             text_module_index = module_type_list.index(3)
             tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
-        dynamic_index = module_type_list.index(4)
-        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
+        if 4 in module_type_list:
+            dynamic_index = module_type_list.index(4)
+            tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
         if 8 in module_type_list:
             additional_module_index = module_type_list.index(8)
             tasks.insert(additional_module_index,
@@ -189,8 +188,9 @@ class DYNAMIC_TYPE_AV(AbstractRun):
         if 3 in module_type_list:
             text_module_index = module_type_list.index(3)
             tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
-        dynamic_index = module_type_list.index(4)
-        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
+        if 4 in module_type_list:
+            dynamic_index = module_type_list.index(4)
+            tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
         if 8 in module_type_list:
             additional_module_index = module_type_list.index(8)
             tasks.insert(additional_module_index,
@@ -233,8 +233,9 @@ class DYNAMIC_TYPE_LIVE_RCMD(AbstractRun):
         if 3 in module_type_list:
             text_module_index = module_type_list.index(3)
             tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
-        dynamic_index = module_type_list.index(4)
-        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
+        if 4 in module_type_list:
+            dynamic_index = module_type_list.index(4)
+            tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
         if 8 in module_type_list:
             additional_module_index = module_type_list.index(8)
             tasks.insert(additional_module_index,
@@ -277,8 +278,9 @@ class DYNAMIC_TYPE_LIVE(AbstractRun):
         if 3 in module_type_list:
             text_module_index = module_type_list.index(3)
             tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
-        dynamic_index = module_type_list.index(4)
-        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
+        if 4 in module_type_list:
+            dynamic_index = module_type_list.index(4)
+            tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
         if 8 in module_type_list:
             additional_module_index = module_type_list.index(8)
             tasks.insert(additional_module_index,
@@ -318,8 +320,9 @@ class DYNAMIC_TYPE_ARTICLE(AbstractRun):
         if 3 in module_type_list:
             text_module_index = module_type_list.index(3)
             tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
-        dynamic_index = module_type_list.index(4)
-        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
+        if 4 in module_type_list:
+            dynamic_index = module_type_list.index(4)
+            tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
         if 8 in module_type_list:
             additional_module_index = module_type_list.index(8)
             tasks.insert(additional_module_index,
@@ -359,8 +362,9 @@ class DYNAMIC_TYPE_COMMON_VERTICAL(AbstractRun):
         if 3 in module_type_list:
             text_module_index = module_type_list.index(3)
             tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
-        dynamic_index = module_type_list.index(4)
-        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
+        if 4 in module_type_list:
+            dynamic_index = module_type_list.index(4)
+            tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
         if 8 in module_type_list:
             additional_module_index = module_type_list.index(8)
             tasks.insert(additional_module_index,
@@ -400,8 +404,9 @@ class DYNAMIC_TYPE_COURSES_SEASON(AbstractRun):
         if 3 in module_type_list:
             text_module_index = module_type_list.index(3)
             tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
-        dynamic_index = module_type_list.index(4)
-        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
+        if 4 in module_type_list:
+            dynamic_index = module_type_list.index(4)
+            tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
         if 8 in module_type_list:
             additional_module_index = module_type_list.index(8)
             tasks.insert(additional_module_index,
@@ -441,8 +446,9 @@ class DYNAMIC_TYPE_MEDIA_LIST(AbstractRun):
         if 3 in module_type_list:
             text_module_index = module_type_list.index(3)
             tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
-        dynamic_index = module_type_list.index(4)
-        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
+        if 4 in module_type_list:
+            dynamic_index = module_type_list.index(4)
+            tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
         if 8 in module_type_list:
             additional_module_index = module_type_list.index(8)
             tasks.insert(additional_module_index,
@@ -482,8 +488,9 @@ class DYNAMIC_TYPE_PGC(AbstractRun):
         if 3 in module_type_list:
             text_module_index = module_type_list.index(3)
             tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
-        dynamic_index = module_type_list.index(4)
-        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
+        if 4 in module_type_list:
+            dynamic_index = module_type_list.index(4)
+            tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
         if 8 in module_type_list:
             additional_module_index = module_type_list.index(8)
             tasks.insert(additional_module_index,
@@ -523,8 +530,9 @@ class DYNAMIC_TYPE_MUSIC(AbstractRun):
         if 3 in module_type_list:
             text_module_index = module_type_list.index(3)
             tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
-        dynamic_index = module_type_list.index(4)
-        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
+        if 4 in module_type_list:
+            dynamic_index = module_type_list.index(4)
+            tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
         if 8 in module_type_list:
             additional_module_index = module_type_list.index(8)
             tasks.insert(additional_module_index,
@@ -564,8 +572,9 @@ class DYNAMIC_TYPE_COMMON_SQUARE(AbstractRun):
         if 3 in module_type_list:
             text_module_index = module_type_list.index(3)
             tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
-        dynamic_index = module_type_list.index(4)
-        tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
+        if 4 in module_type_list:
+            dynamic_index = module_type_list.index(4)
+            tasks.insert(dynamic_index, MajorRender().major_render(item.modules[dynamic_index].module_dynamic))
         if 8 in module_type_list:
             additional_module_index = module_type_list.index(8)
             tasks.insert(additional_module_index,
@@ -606,8 +615,9 @@ class DYNAMIC_TYPE_FORWARD(AbstractRun):
         if 3 in module_type_list:
             text_module_index = module_type_list.index(3)
             tasks.insert(text_module_index, Text().text_render(item.modules[text_module_index].module_desc))
-        dynamic_index = module_type_list.index(4)
-        tasks.insert(dynamic_index, ForwardRender().run(item.modules[dynamic_index].module_dynamic.dyn_forward.item))
+        if 4 in module_type_list:
+            dynamic_index = module_type_list.index(4)
+            tasks.insert(dynamic_index, ForwardRender().run(item.modules[dynamic_index].module_dynamic.dyn_forward.item))
         if 8 in module_type_list:
             additional_module_index = module_type_list.index(8)
             tasks.insert(additional_module_index,
@@ -653,5 +663,5 @@ class Render(ConfigInit):
             logger.error("不支持的动态类型")
 
         except Exception as e:
-            logger.exception("What?!")
+            logger.exception(e)
             logger.error("动态渲染失败")

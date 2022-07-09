@@ -89,7 +89,6 @@ class TextCalculate(ConfigReader):
         """
         计算字的位置的入口函数
         :param font_color: 字体的颜色
-        :param font_name: 使用的字体名称
         :param font_size: 字体的字号
         :param x_constraint: x方向约束
         :param y_constraint: y方向约束
