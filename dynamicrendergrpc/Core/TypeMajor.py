@@ -92,7 +92,10 @@ class MAJOR_TYPE_PGC(ConfigReader, AbstractMajor, PicGetter):
             title = major_item.dyn_pgc.title
             duration = major_item.dyn_pgc.cover_left_text_1
             cover_uri = major_item.dyn_pgc.cover
-            badge = major_item.dyn_pgc.badge_category[1].text
+            if major_item.dyn_pgc.badge_category:
+                badge = major_item.dyn_pgc.badge_category[1].text
+            else:
+                badge = "视频"
             await self.make_main_card(cover_uri, title, duration, badge)
             return cv.cvtColor(numpy.asarray(self.background), cv.COLOR_RGBA2BGRA)
         except Exception as e:
